@@ -85,8 +85,46 @@ err_t working_dir_join(char *path_to_set, size_t len_path_to_set,
 }
 
 // ----------------------------------------------------------------------------
+err_t working_dir_read_input(cJSON **json) {
+    // Local variables
+    err_t err = NO_ERROR;
+    int stat = 0;
+    char file_path[512];
+    char *short_uuid_buf = NULL;
+
+    short_uuid_buf = uuid_tostring_short(g_cmdline_args.block_id);
+    if (short_uuid_buf == NULL) return ERR("Failed to retrieve UUID");
+
+    stat = snprintf(file_path, 512, "%s/%s_%s.json", g_working_dir_inputs,
+                    g_cmdline_args.block_name,
+                    short_uuid_buf);
+    if (stat < 0) return ERR("Failed to construct filepath");
+    if ((size_t)stat >= 512) return ERR("Filepath too long");
+
+    err = read_json(json, file_path);
+    if (err) return ERR("Failed to read JSON contents");
+
+    free(short_uuid_buf);
+
+    return NO_ERROR;
+}
+
+// ----------------------------------------------------------------------------
+err_t working_dir_read(cJSON **json, const char *path){
+    // Local variables
+    err_t err = NO_ERROR;
+
+    if (path == NULL) return ERR("path has not been set");
+
+    err = read_json(json, path);
+    if (err) return ERR("Failed to read JSON contents");
+
+    return NO_ERROR;
+}
+
+// ----------------------------------------------------------------------------
 err_t working_dir_write(char **file_written,
-                        const working_dir_subdirs_t subdir, cJSON *json) {
+                        const working_dir_subdirs_t subdir, const cJSON *json) {
     // Local variables
     err_t err = NO_ERROR;
     char path_buffer[512];
@@ -140,7 +178,7 @@ err_t working_dir_file(char *file_path, size_t len_file_path,
     if (directory == NULL) return ERR("Working directory not set");
     if (g_cmdline_args.block_name == NULL) return ERR("cmdline args not set");
 
-    short_uuid_buf = uuid_tostring_short(g_cmdline_args.execution_id);
+    short_uuid_buf = uuid_tostring_short(g_cmdline_args.block_id);
     if (short_uuid_buf == NULL) return ERR("Failed to retrieve UUID");
 
     if (subdir == FILES) {

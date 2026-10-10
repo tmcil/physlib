@@ -26,6 +26,8 @@ err_t environment_init(int argc, char *argv[]){
     if (err) return ERR("Failed to create stderr path");
     open_stderr_file(log_path);
 
+    MSG("Block started: %s", g_cmdline_args.block_name);
+
     return NO_ERROR;
 }
 
@@ -39,6 +41,8 @@ err_t environment_done() {
 
     err = close_stderr_file();
     if (err) return ERR("Failed to close stderr file");
+
+    MSG("Block finished: %s", g_cmdline_args.block_name);
 
     return NO_ERROR;
 }

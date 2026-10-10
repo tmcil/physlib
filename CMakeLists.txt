@@ -11,13 +11,18 @@ set(CMAKE_C_EXTENSIONS OFF)
 add_library(internal_libs STATIC
     block_common/block_output.c
     block_input_tle/block_input_tle_config.c
+    block_sgp4/block_sgp4_config.c
+
     utils/error_handling.c
     utils/file_io.c
     utils/uuid.c
+
     environment/environment.c
     environment/parse_cmdline.c
     environment/working_dir.c
+
     datastructures/eph.c
+    datastructures/tim.c
     datastructures/tle.c
 )
 target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -60,4 +65,9 @@ target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(block_input_tle
     block_input_tle/block_input_tle.c
 )
-target_link_libraries(block_input_tle PRIVATE internal_libs cjson)
+target_link_libraries(block_input_tle PRIVATE m internal_libs cjson)
+
+add_executable(block_sgp4
+    block_sgp4/block_sgp4.c
+)
+target_link_libraries(block_sgp4 PRIVATE m internal_libs cjson)

@@ -4,15 +4,11 @@
 
 #include "block_input_tle_config.h"
 
-#include <string.h>
-
-#include "external/cJSON.h"
-#include "utils/error_handling.h"
-#include "utils/file_io.h"
-#include "utils/uuid.h"
 #include "block_common/block_output.h"
 #include "datastructures/tle.h"
 #include "environment/environment.h"
+#include "external/cJSON.h"
+#include "utils/error_handling.h"
 
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------
@@ -39,7 +35,7 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to initialise working environment");
 
     // Read the program config
-    err = read_json(&block_config_json, "/home/thomas-mcilwraith/workspace/test/tle_inputs.json");
+    err = working_dir_read_input(&block_config_json);
     if (err) return ERR("Failed to read json file");
     err = input_tle_config_read_json(&block_config, block_config_json);
     if (err) return ERR("Failed to load config struct");
@@ -57,6 +53,7 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to create TLE JSON");
     err = working_dir_write(&file_written_buf, FILES, tle_json);
     if (err) return ERR("Failed to write TLE file");
+    cJSON_Delete(tle_json);
 
     // Push the written file into the outputs object
     err = block_output_push(&outputs, OUTPUT_TLE, file_written_buf);
@@ -67,13 +64,10 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to create output JSON");
     err = working_dir_write(&file_written_buf, OUTPUTS, outputs_json);
     if (err) return ERR("Failed to write output file");
-
-    MSG("Block finished: %s", g_cmdline_args.block_name);
+    cJSON_Delete(outputs_json);
 
     // Free memory
     environment_done();
-    cJSON_Delete(outputs_json);
-    cJSON_Delete(tle_json);
     tle_reset(&tle);
     block_output_reset(&outputs);
     if (file_written_buf != NULL) free(file_written_buf);

@@ -56,7 +56,6 @@ err_t eph_push(eph_t *item, const vec_t *vec, const cov_t *cov,
               const bool add_vec, const bool add_cov);
 err_t eph_create_json(cJSON **json, const eph_t *item);
 err_t eph_read_json(eph_t *item, const cJSON *json);
-
 err_t eph_reset(eph_t *item);
 bool eph_isreset(const eph_t *item);
 

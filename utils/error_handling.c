@@ -124,7 +124,7 @@ err_t construct_message(char *constructed, const size_t len_constructed,
 
     // Format the time
     gmtime_r(&now, &utc);
-    tstat = strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &utc);
+    tstat = strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &utc);
     if (tstat == 0) return WAR("Poorly formatted timestamp: %s", timestamp);
 
     // Select the correct level character, based on the err_t.
