@@ -43,9 +43,16 @@ add_library(cjson STATIC
 target_include_directories(cjson PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(cjson PUBLIC c_std_23)
 
+add_library(sgp4 STATIC
+    external/SGP4.c
+    external/TLE.c
+)
+target_include_directories(sgp4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(sgp4 PUBLIC c_std_23)
+
 # Link external libraries to project
 target_link_libraries(internal_libs PUBLIC
-    cjson
+    sgp4
 )
 
 # -----------------------------------------------------------------------------

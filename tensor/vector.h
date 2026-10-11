@@ -16,6 +16,7 @@ typedef struct {
 } vector_t;
 
 // ----------------------------------------------------------------------------
-err_t vector_done(vector_t *vec);
+err_t vector_reset(vector_t *vec);
+err_t vector_print(const vector_t vec);
 
 #endif // VECTOR_H
