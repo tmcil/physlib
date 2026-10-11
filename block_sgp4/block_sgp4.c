@@ -9,45 +9,40 @@
 #include "external/cJSON.h"
 #include "utils/error_handling.h"
 #include "block_common/block_output.h"
-#include "datastructures/eph.h"
-#include "datastructures/tle.h"
-#include "datastructures/tim.h"
+#include "product/eph.h"
+#include "product/tle.h"
+#include "product/tim.h"
 #include "environment/environment.h"
 
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------
     // Block config object
     sgp4_config_t block_config      = {0};
-    // Block config JSON
-    cJSON *block_config_json        = NULL;
     // TLE object
     tle_t  tle                      = {0};
-    // TLE object JSON
-    cJSON *tle_json                 = NULL;
     // Block outputs ----------------------------------------------------------
     // Block output
     block_output_t outputs          = {0};
-    // Block output JSON
-    cJSON *outputs_json             = NULL;
     // EPH object
     eph_t eph                       = {0};
-    // EPH object JSON
-    cJSON *eph_json                 = NULL;
     // Block variables --------------------------------------------------------
     // Error Status
     err_t err                       = NO_ERROR;
     // Buffer to store the path of each file written
     char *file_written_buf          = NULL;
+    // JSON objects
+    cJSON *j_block_config = NULL, *j_outputs = NULL;
+    cJSON *j_tle = NULL, *j_eph = NULL;
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
 
     // Read the program config
-    err = working_dir_read_input(&block_config_json);
+    err = working_dir_read_input(&j_block_config);
     if (err) return ERR("Failed to read json file");
-    err = block_sgp4_config_read(&block_config, block_config_json);
+    err = block_sgp4_config_read(&block_config, j_block_config);
     if (err) return ERR("Failed to load config struct");
-    cJSON_Delete(block_config_json);
+    cJSON_Delete(j_block_config);
 
 /*     MSG("wgs: %d", block_config.wgs_model);
     epoch_t epoch = {0};

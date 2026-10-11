@@ -11,6 +11,7 @@ err_t eph_create_json(cJSON **json, const eph_t *item) {
     cJSON *cov_array = NULL;
     cJSON *vec_array_el = NULL;
     cJSON *cov_array_el = NULL;
+    char *iso_buf;
 
     if (item == NULL) return ERR("Bad item pointer argument passed");
     if (eph_isreset(item)) return WAR("Cannot write an empty ephemeris");
@@ -51,13 +52,15 @@ err_t eph_create_json(cJSON **json, const eph_t *item) {
     cJSON_AddItemToObject(*json, "hasCovarianceMatrices", aux);
 
     if (item->has_state_vectors) {
-        vec_array = cJSON_AddArrayToObject(*json, "stateVectors");
+        vec_array = cJSON_AddArrayToObject(*json, "data");
         if (vec_array == NULL) return ERR("Failed to create json: state_vectors");
 
         for (int i = 0; i < item->n_datapoints; i++) {
             vec_array_el = cJSON_CreateObject();
-            aux = cJSON_CreateNumber(item->state_vectors[i].epoch);
-            if (aux == NULL) return ERR("Failed to create json: state_vectors[%d].epoch", i);
+
+            epoch_to_iso8601(&iso_buf, &item->state_vectors[i].epoch, true);
+            aux = cJSON_CreateString(iso_buf);
+            if (aux == NULL) return ERR("Failed to create JSON for epoch: %s", iso_buf);
             cJSON_AddItemToObject(vec_array_el, "epoch", aux);
 
             aux = cJSON_CreateArray();
@@ -101,9 +104,11 @@ err_t eph_read_json(eph_t *item, const cJSON *json) {
     cJSON *cov_array = NULL;
     cJSON *vec_array_el = NULL;
     cJSON *cov_array_el = NULL;
-    vec_t aux_vec = {0};
+    vector_t aux_vec = {0};
     cov_t aux_cov = {0};
     err_t err;
+    epoch_t epoch = {0};
+    bool is_utc = false;
 
     if (json == NULL) return ERR("NULL cJSON argument passed");
 
@@ -139,7 +144,7 @@ err_t eph_read_json(eph_t *item, const cJSON *json) {
     item->has_covariance_matrices = cJSON_IsTrue(aux);
 
     if (item->has_state_vectors) {
-        item->state_vectors = malloc(item->n_datapoints * sizeof(vec_t));
+        item->state_vectors = malloc(item->n_datapoints * sizeof(vector_t));
         if (item->state_vectors == NULL) return ERR("Failed to allocate: state_vectors");
 
         vec_array = cJSON_GetObjectItemCaseSensitive(json, "stateVectors");
@@ -154,8 +159,10 @@ err_t eph_read_json(eph_t *item, const cJSON *json) {
             if (!cJSON_IsObject(vec_array_el)) return ERR("Failed to read: statevector[%d]", i);
             
             aux = cJSON_GetObjectItemCaseSensitive(vec_array_el, "epoch");
-            if (!cJSON_IsNumber(aux)) return ERR("Failed to read epoch[%d]", i);
-            aux_vec.epoch = aux->valuedouble;
+            if (!cJSON_IsString(aux)) return ERR("Failed to read epoch[%d]", i);
+            err = epoch_from_iso8601(&epoch, &is_utc, aux->valuestring, J2000);
+            if (err) return ERR("Failed to convert ISO string to epoch: %s", aux->valuestring);
+            aux_vec.epoch = epoch;
 
             aux = cJSON_GetObjectItemCaseSensitive(vec_array_el, "vec");
             if (!cJSON_IsArray(aux)) return ERR("Failed to read vec[%d]", i);
@@ -202,14 +209,14 @@ err_t eph_read_json(eph_t *item, const cJSON *json) {
 }
 
 // ----------------------------------------------------------------------------
-err_t eph_push(eph_t *item, const vec_t *vec, const cov_t *cov,
+err_t eph_push(eph_t *item, const vector_t *vec, const cov_t *cov,
               const bool add_vec, const bool add_cov) {
     // Local variables
-    vec_t *aux_vec = NULL;
+    vector_t *aux_vec = NULL;
     cov_t *aux_cov = NULL;
 
     if (item == NULL) return ERR("NULL eph_t argument passed");
-    if (vec == NULL && add_vec) return ERR("NULL vec_t passed to eph_addvec");
+    if (vec == NULL && add_vec) return ERR("NULL vector_t passed to eph_addvec");
     if (cov == NULL && add_cov) return ERR("NULL cov_t passed to eph_addvec");
     if (!add_cov && !add_vec) return WAR("No add option selected");
     if ((add_cov && add_vec) && (item->has_covariance_matrices ^

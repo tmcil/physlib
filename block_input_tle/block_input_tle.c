@@ -5,7 +5,7 @@
 #include "block_input_tle_config.h"
 
 #include "block_common/block_output.h"
-#include "datastructures/tle.h"
+#include "product/tle.h"
 #include "environment/environment.h"
 #include "external/cJSON.h"
 #include "utils/error_handling.h"

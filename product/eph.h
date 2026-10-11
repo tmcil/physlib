@@ -8,17 +8,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "tensor/vector.h"
 #include "utils/error_handling.h"
 #include "external/cJSON.h"
 
 // Module data structures -----------------------------------------------------
 
-typedef struct {
-    // Epoch in MJD2000
-    double epoch;
-    // 3D state vector [x1, x2, x3, v1, v2, v3]
-    double vec[6];
-} vec_t;
 
 typedef struct {
     // Epoch in MJD2000
@@ -43,7 +38,7 @@ typedef struct {
     // True if covariance information is present
     bool has_covariance_matrices;
     // Array of state vectors, always has dimension n_datapoints
-    vec_t *state_vectors;
+    vector_t *state_vectors;
     // Array of covariances, always has dimension n_datapoints
     cov_t *covariance_matrices;
 } eph_t;
@@ -52,7 +47,7 @@ typedef struct {
 
 err_t eph_init(eph_t *item, const int satellite_id, const int center_body,
                const int reference_frame, const double meters_scale_factor);
-err_t eph_push(eph_t *item, const vec_t *vec, const cov_t *cov,
+err_t eph_push(eph_t *item, const vector_t *vec, const cov_t *cov,
               const bool add_vec, const bool add_cov);
 err_t eph_create_json(cJSON **json, const eph_t *item);
 err_t eph_read_json(eph_t *item, const cJSON *json);

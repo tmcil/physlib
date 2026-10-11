@@ -21,9 +21,14 @@ add_library(internal_libs STATIC
     environment/parse_cmdline.c
     environment/working_dir.c
 
-    datastructures/eph.c
-    datastructures/tim.c
-    datastructures/tle.c
+    product/eph.c
+    product/tim.c
+    product/tle.c
+
+    tensor/vector.c
+    tensor/matrix.c
+
+    time/epoch.c
 )
 target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(internal_libs PUBLIC c_std_23)
