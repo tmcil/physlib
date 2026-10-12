@@ -113,10 +113,16 @@ err_t working_dir_read_input(cJSON **json) {
 err_t working_dir_read(cJSON **json, const char *path){
     // Local variables
     err_t err = NO_ERROR;
+    int stat = 0;
+    char full_path[512];
 
     if (path == NULL) return ERR("path has not been set");
 
-    err = read_json(json, path);
+    stat = snprintf(full_path, 512, "%s/%s", m_working_dir_execution, path);
+    if (stat < 0) return ERR("Failed to construct filepath");
+    if ((size_t)stat >= 512) return ERR("Filepath too long");
+
+    err = read_json(json, full_path);
     if (err) return ERR("Failed to read JSON contents");
 
     return NO_ERROR;

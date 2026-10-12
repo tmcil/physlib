@@ -21,5 +21,6 @@ err_t uuid_set(uuid_t *u, const char* val);
 err_t uuid_check(const uuid_t *u);
 char* uuid_tostring(const uuid_t u);
 char* uuid_tostring_short(const uuid_t u);
+void uuid_reset(uuid_t *u);
 
 #endif // WORKING_DIR

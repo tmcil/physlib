@@ -13,6 +13,7 @@
 #include "product/tle.h"
 #include "product/tim.h"
 #include "environment/environment.h"
+#include "environment/block_graph.h"
 
 #include "external/SGP4.h"
 #include "external/TLE.h"
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]) {
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
 
-    // Read the program config
+/*     // Read the program config
     err = working_dir_read_input(&j_block_config);
     if (err) return ERR("Failed to read json file");
     err = block_sgp4_config_read(&block_config, j_block_config);
@@ -86,7 +87,7 @@ int main(int argc, char *argv[]) {
     err = working_dir_read(&j_tle, "/mnt/executions/6ec083b7-faea-4bf7-a62a-b8296cee2238/files/BLOCK_INPUT_TLE_00_4902ae5fb194.json");
     if (err) return ERR("Failed to read json file");
     err = tle_read_json(&tle, j_tle);
-    if (err) return ERR("Failed to load tle struct");
+    if (err) return ERR("Failed to load tle struct"); */
 
     // Read the TIM input
     // ...
@@ -99,7 +100,7 @@ int main(int argc, char *argv[]) {
 
     // Write the output JSON
 
-    vector_t test_vec = {0};
+/*     vector_t test_vec = {0};
     const char* iso = "2026-10-11T12:00:00.000Z";
     epoch_t test_ep = {0};
     bool utc = true;
@@ -108,7 +109,7 @@ int main(int argc, char *argv[]) {
     err = sgp4_eval(&test_vec, test_ep, tle, block_config.wgs_model);
     if (err) return ERR("Failed to compute SV");
 
-    vector_print(test_vec);
+    vector_print(test_vec) */;
 
     // Free memory
     environment_done();

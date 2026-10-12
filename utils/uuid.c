@@ -51,3 +51,9 @@ char* uuid_tostring_short(const uuid_t u) {
 
     return short_uuid;
 }
+
+// ----------------------------------------------------------------------------
+void uuid_reset(uuid_t *u) {
+    if (u->val != NULL) free(u->val);
+    return;
+}

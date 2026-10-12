@@ -20,6 +20,7 @@ add_library(internal_libs STATIC
     environment/environment.c
     environment/parse_cmdline.c
     environment/working_dir.c
+    environment/block_graph.c
 
     product/eph.c
     product/tim.c
