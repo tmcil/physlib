@@ -18,7 +18,7 @@ err_t environment_init(int argc, char *argv[]){
     if (err) return ERR("Failed to set working dir paths");
 
     // Read the block_graph.json and set g_block_graph
-    err = working_dir_read(&j_block_graph, "inputs/block_graph.json");
+    err = working_dir_read(&j_block_graph, INPUTS, "block_graph.json");
     if (err) return ERR("Failed to read block graph JSON");
     err = graph_read_json(&g_block_graph, j_block_graph);
     if (err) return ERR("Malformed block graph JSON");

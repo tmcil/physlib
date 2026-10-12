@@ -17,6 +17,7 @@ typedef struct {
 
 // ----------------------------------------------------------------------------
 
+bool uuid_eq(uuid_t u1, uuid_t u2);
 err_t uuid_set(uuid_t *u, const char* val);
 err_t uuid_check(const uuid_t *u);
 char* uuid_tostring(const uuid_t u);

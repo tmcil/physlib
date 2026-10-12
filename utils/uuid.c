@@ -4,6 +4,11 @@
 
 
 // ----------------------------------------------------------------------------
+bool uuid_eq(uuid_t u1, uuid_t u2) {
+    return (strcmp(uuid_tostring(u1), uuid_tostring(u2)) == 0);
+}
+
+// ----------------------------------------------------------------------------
 err_t uuid_set(uuid_t *u, const char* val) {
     // Local variables
     err_t err = NO_ERROR;

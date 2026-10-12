@@ -110,15 +110,34 @@ err_t working_dir_read_input(cJSON **json) {
 }
 
 // ----------------------------------------------------------------------------
-err_t working_dir_read(cJSON **json, const char *path){
+err_t working_dir_read(cJSON **json,
+                       const working_dir_subdirs_t subdir, const char *path){
     // Local variables
     err_t err = NO_ERROR;
     int stat = 0;
     char full_path[512];
+    char *dir = NULL;
 
     if (path == NULL) return ERR("path has not been set");
 
-    stat = snprintf(full_path, 512, "%s/%s", m_working_dir_execution, path);
+    switch (subdir) {
+        case INPUTS:
+            dir = strdup("inputs");
+            break;
+        case OUTPUTS:
+            dir = strdup("outputs");
+            break;
+        case FILES:
+            dir = strdup("files");
+            break;
+        case LOGS:
+            dir = strdup("logs");
+            break;
+        default:
+            return ERR("Unknown subdir passed to function");
+    }
+
+    stat = snprintf(full_path, 512, "%s/%s/%s", m_working_dir_execution, dir, path);
     if (stat < 0) return ERR("Failed to construct filepath");
     if ((size_t)stat >= 512) return ERR("Filepath too long");
 
@@ -134,6 +153,7 @@ err_t working_dir_write(char **file_written,
     // Local variables
     err_t err = NO_ERROR;
     char path_buffer[512];
+    char *filename;
 
     if (json == NULL) return ERR("Cannot write NULL JSON argument");
     if (g_working_dir_files == NULL) return ERR("Files directory not set");
@@ -147,7 +167,9 @@ err_t working_dir_write(char **file_written,
 
     if (*file_written != NULL) free(*file_written);
 
-    *file_written = strdup(path_buffer);
+    filename = strrchr(path_buffer, '/');
+    filename = filename ? filename + 1 : path_buffer;
+    *file_written = strdup(filename);
     if (*file_written == NULL) return ERR("Failed to allocate memory for output");
 
     m_n_files_written++;

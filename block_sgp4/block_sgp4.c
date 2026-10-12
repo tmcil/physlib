@@ -55,39 +55,42 @@ err_t sgp4_eval(vector_t *teme_vec, const epoch_t epoch, const tle_t tle,
 
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------
-    // Block config object
-    sgp4_config_t block_config      = {0};
-    // TLE object
-    tle_t  tle                      = {0};
+    sgp4_config_t block_config = {0};
+    tle_t  tle                 = {0};
     // Block outputs ----------------------------------------------------------
-    // Block output
-    block_output_t outputs          = {0};
-    // EPH object
-    eph_t eph                       = {0};
+    output_block_t outputs     = {0};
+    eph_t eph                  = {0};
     // Block variables --------------------------------------------------------
-    // Error Status
-    err_t err                       = NO_ERROR;
-    // Buffer to store the path of each file written
-    char *file_written_buf          = NULL;
-    // JSON objects
+    err_t err                  = NO_ERROR;
+    char *file_written_buf     = NULL;
+    char  file_to_read_buf[512];
+    // JSON objects -----------------------------------------------------------
     cJSON *j_block_config = NULL, *j_outputs = NULL;
     cJSON *j_tle = NULL, *j_eph = NULL;
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
 
-/*     // Read the program config
+    err = output_block_init(&outputs);
+    if (err) return ERR("Failed to initialise output object");
+
+     // Read the program config
     err = working_dir_read_input(&j_block_config);
-    if (err) return ERR("Failed to read json file");
+    if (err) return ERR("Failed to read config JSON file");
     err = block_sgp4_config_read(&block_config, j_block_config);
-    if (err) return ERR("Failed to load config struct");
+    if (err) return ERR("Failed to load config object");
     cJSON_Delete(j_block_config);
 
+    // Retrieve the input TLE file
+    err = graph_find_input_port_file(file_to_read_buf, g_cmdline_args.block_id,
+                                     "tle");
+    if (err) return ERR("Failed to find input file from block graph");
+
     // Read the TLE input
-    err = working_dir_read(&j_tle, "/mnt/executions/6ec083b7-faea-4bf7-a62a-b8296cee2238/files/BLOCK_INPUT_TLE_00_4902ae5fb194.json");
+    err = working_dir_read(&j_tle, FILES, file_to_read_buf);
     if (err) return ERR("Failed to read json file");
     err = tle_read_json(&tle, j_tle);
-    if (err) return ERR("Failed to load tle struct"); */
+    if (err) return ERR("Failed to load tle struct");
 
     // Read the TIM input
     // ...

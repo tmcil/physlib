@@ -12,34 +12,24 @@
 
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------
-    // Block config
     input_tle_config_t block_config = {0};
-    // Block config JSON
-    cJSON *block_config_json        = NULL;
     // Block outputs ----------------------------------------------------------
-    // Block output
-    block_output_t outputs          = {0};
-    // Block output JSON
-    cJSON *outputs_json             = NULL;
-    // TLE object
+    output_block_t outputs          = {0};
     tle_t  tle                      = {0};
-    // TLE object JSON
-    cJSON *tle_json                 = NULL;
     // Block variables --------------------------------------------------------
-    // Error Status
     err_t err                       = NO_ERROR;
-    // Buffer to store the path of each file written
     char *file_written_buf          = NULL;
+    cJSON *j_block_config = NULL, *j_outputs = NULL, *j_tle = NULL;
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
 
     // Read the program config
-    err = working_dir_read_input(&block_config_json);
+    err = working_dir_read_input(&j_block_config);
     if (err) return ERR("Failed to read json file");
-    err = input_tle_config_read_json(&block_config, block_config_json);
+    err = input_tle_config_read_json(&block_config, j_block_config);
     if (err) return ERR("Failed to load config struct");
-    cJSON_Delete(block_config_json);
+    cJSON_Delete(j_block_config);
 
     // Fill the TLE type
     tle.satellite_id = block_config.satellite_id;
@@ -49,27 +39,29 @@ int main(int argc, char *argv[]) {
     MSG("Successfully created TLE for: %s", tle.object_name);
 
     // Create the output JSONs
-    err = tle_create_json(&tle_json, &tle);
+    err = tle_create_json(&j_tle, &tle);
     if (err) return ERR("Failed to create TLE JSON");
-    err = working_dir_write(&file_written_buf, FILES, tle_json);
+    err = working_dir_write(&file_written_buf, FILES, j_tle);
     if (err) return ERR("Failed to write TLE file");
-    cJSON_Delete(tle_json);
+    cJSON_Delete(j_tle);
 
-    // Push the written file into the outputs object
-    err = block_output_push(&outputs, OUTPUT_TLE, file_written_buf);
-    if (err) return ERR("Failed to fill output struct");
+    // Initialise the output object
+    err = output_block_init(&outputs);
+    if (err) return ERR("Failed to initialise output object");
+    // Push the TLE to the output port
+    err = output_block_push(&outputs, "tle", file_written_buf);
+    if (err) return ERR("Failed to add TLE to outputs");
 
     // Write the block output
-    err = block_output_create_json(&outputs_json, &outputs);
+    err = output_block_create_json(&j_outputs, &outputs);
     if (err) return ERR("Failed to create output JSON");
-    err = working_dir_write(&file_written_buf, OUTPUTS, outputs_json);
+    err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
     if (err) return ERR("Failed to write output file");
-    cJSON_Delete(outputs_json);
+    cJSON_Delete(j_outputs);
 
     // Free memory
     environment_done();
     tle_reset(&tle);
-    block_output_reset(&outputs);
     if (file_written_buf != NULL) free(file_written_buf);
 
     return NO_ERROR;
