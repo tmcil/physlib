@@ -1,0 +1,30 @@
+#include "block_input_tim_config.h"
+
+// Module Variables -----------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+err_t input_tim_config_read_json(input_tim_config_t *item, const cJSON *json) {
+    // Local variables
+    cJSON *aux = NULL;
+
+    if (item == NULL) return ERR("Cannot read JSON to NULL pointer");
+
+    aux = cJSON_GetObjectItemCaseSensitive(json, "start");
+    if (!cJSON_IsString(aux)) return ERR("Failed to read JSON: start");
+    item->start = strdup(aux->valuestring);
+
+    aux = cJSON_GetObjectItemCaseSensitive(json, "end");
+    if (!cJSON_IsString(aux)) return ERR("Failed to read JSON: end");
+    item->end = strdup(aux->valuestring);
+
+    aux = cJSON_GetObjectItemCaseSensitive(json, "stepsizeSeconds");
+    if (!cJSON_IsNumber(aux)) return ERR("Failed to read JSON: stepsizeSeconds");
+    item->stepsize_seconds = aux->valuedouble;
+
+    aux = cJSON_GetObjectItemCaseSensitive(json, "isSingle");
+    if (!cJSON_IsBool(aux)) return ERR("Failed to read JSON: isSingle");
+    item->is_single = (bool)cJSON_IsTrue(aux);
+
+    return NO_ERROR;
+}

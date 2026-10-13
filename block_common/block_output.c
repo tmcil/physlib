@@ -144,13 +144,6 @@ err_t output_block_init(output_block_t *item) {
                 item->ports[n_output_ports-1].port_id = g_block_graph.blocks[i].ports[j].port_id;
             }
             item->n_ports = n_output_ports;
-            // item->ports = realloc(g_block_graph.blocks[i].n_ports * sizeof(output_port_t));
-            // item->n_ports = g_block_graph.blocks[i].n_ports;
-        
-            // for (j = 0; j < g_block_graph.blocks[i].n_ports; j++) {
-            //     item->ports[j].filepath = NULL;
-            //     item->ports[j].port_id = g_block_graph.blocks[i].ports[j].port_id;
-            // }
         
             return NO_ERROR;
         }

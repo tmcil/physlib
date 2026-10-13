@@ -63,7 +63,6 @@ int main(int argc, char *argv[]) {
     // Block variables --------------------------------------------------------
     err_t err                  = NO_ERROR;
     char *file_written_buf     = NULL;
-    char  file_to_read_buf[512];
     // JSON objects -----------------------------------------------------------
     cJSON *j_block_config = NULL, *j_outputs = NULL;
     cJSON *j_tle = NULL, *j_eph = NULL;
@@ -81,19 +80,14 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to load config object");
     cJSON_Delete(j_block_config);
 
-    // Retrieve the input TLE file
-    err = graph_find_input_port_file(file_to_read_buf, g_cmdline_args.block_id,
-                                     "tle");
-    if (err) return ERR("Failed to find input file from block graph");
-
     // Read the TLE input
-    err = working_dir_read(&j_tle, FILES, file_to_read_buf);
-    if (err) return ERR("Failed to read json file");
+    err = graph_find_input_port_file(&j_tle, g_cmdline_args.block_id, "tle");
+    if (err) return ERR("Failed to find input file from block graph");
     err = tle_read_json(&tle, j_tle);
     if (err) return ERR("Failed to load tle struct");
 
     // Read the TIM input
-    // ...
+
 
     // Evaluate the TLE along TIM with SGP4_eval. Stored in EPH
 

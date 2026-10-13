@@ -26,9 +26,9 @@ int main(int argc, char *argv[]) {
 
     // Read the program config
     err = working_dir_read_input(&j_block_config);
-    if (err) return ERR("Failed to read json file");
+    if (err) return ERR("Failed to read input JSON file");
     err = input_tle_config_read_json(&block_config, j_block_config);
-    if (err) return ERR("Failed to load config struct");
+    if (err) return ERR("Input JSON file is malformed");
     cJSON_Delete(j_block_config);
 
     // Fill the TLE type
@@ -38,23 +38,23 @@ int main(int argc, char *argv[]) {
     snprintf(tle.line_2, sizeof(tle.line_2), "%s", block_config.line_2);
     MSG("Successfully created TLE for: %s", tle.object_name);
 
-    // Create the output JSONs
+    // Create the product JSON
     err = tle_create_json(&j_tle, &tle);
-    if (err) return ERR("Failed to create TLE JSON");
+    if (err) return ERR("Failed to convert product TLE to JSON");
     err = working_dir_write(&file_written_buf, FILES, j_tle);
-    if (err) return ERR("Failed to write TLE file");
+    if (err) return ERR("Failed to write TLE JSON file");
     cJSON_Delete(j_tle);
 
     // Initialise the output object
     err = output_block_init(&outputs);
-    if (err) return ERR("Failed to initialise output object");
+    if (err) return ERR("Failed to initialise the output block for %s", g_cmdline_args.block_name);
     // Push the TLE to the output port
     err = output_block_push(&outputs, "tle", file_written_buf);
-    if (err) return ERR("Failed to add TLE to outputs");
+    if (err) return ERR("Failed to add TLE to the outputs");
 
     // Write the block output
     err = output_block_create_json(&j_outputs, &outputs);
-    if (err) return ERR("Failed to create output JSON");
+    if (err) return ERR("Failed to convert outputs to JSON");
     err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
     if (err) return ERR("Failed to write output file");
     cJSON_Delete(j_outputs);

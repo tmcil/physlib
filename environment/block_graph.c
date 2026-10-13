@@ -168,7 +168,8 @@ err_t graph_conn_read_json(graph_connection_t *conn, const cJSON *json) {
 }
 
 // ----------------------------------------------------------------------------
-err_t graph_find_input_port_file(char *file, const uuid_t this_block_id, const char* port) {
+err_t graph_find_input_port_file(cJSON **j_target, const uuid_t this_block_id,
+                                 const char* port) {
     // Local variables
     err_t err = NO_ERROR;
     char output_file_buf[512];
@@ -176,7 +177,7 @@ err_t graph_find_input_port_file(char *file, const uuid_t this_block_id, const c
     graph_port_t this_port = {0};
     graph_connection_t connection = {0};
     graph_block_t target_block = {0};
-    cJSON *j_target = NULL;
+    cJSON *j_output_target = NULL;
     output_block_t output_target = {0};
     size_t i = 0;
     bool found = false;
@@ -205,17 +206,18 @@ err_t graph_find_input_port_file(char *file, const uuid_t this_block_id, const c
     if ((size_t)stat >= 512) return ERR("Filename too long");
 
     // Read the target file and parse the JSON
-    err = working_dir_read(&j_target, OUTPUTS, output_file_buf);
+    err = working_dir_read(&j_output_target, OUTPUTS, output_file_buf);
     if (err) return ERR("Failed to read input port program output file: %s", output_file_buf);
 
     // The file to return is the one on connection.portId
-    err = output_block_read_json(&output_target, j_target);
+    err = output_block_read_json(&output_target, j_output_target);
     if (err) return ERR("Failed to create target object");
 
     for (i = 0; i < output_target.n_ports; i++) {
         if (strcmp(output_target.ports[i].port_id, connection.port_id) == 0) {
             found = true;
-            strcpy(file, output_target.ports[i].filepath);
+            err = working_dir_read(j_target, FILES, output_target.ports[i].filepath);
+            if (err) return ERR("Failed to read JSON file: %s", output_target.ports[i].filepath);
         }
     }
     if (!found) return ERR("Could not find requested port in output of connected program");

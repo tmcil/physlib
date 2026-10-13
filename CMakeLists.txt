@@ -11,6 +11,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 add_library(internal_libs STATIC
     block_common/block_output.c
     block_input_tle/block_input_tle_config.c
+    block_input_tim/block_input_tim_config.c
     block_sgp4/block_sgp4_config.c
 
     utils/error_handling.c
@@ -79,6 +80,11 @@ add_executable(block_input_tle
     block_input_tle/block_input_tle.c
 )
 target_link_libraries(block_input_tle PRIVATE m internal_libs cjson)
+
+add_executable(block_input_tim
+    block_input_tim/block_input_tim.c
+)
+target_link_libraries(block_input_tim PRIVATE m internal_libs cjson)
 
 add_executable(block_sgp4
     block_sgp4/block_sgp4.c

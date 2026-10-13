@@ -51,7 +51,8 @@ err_t graph_block_read_json(graph_block_t *block, const cJSON *json);
 err_t graph_port_read_json(graph_port_t *port, const cJSON *json);
 err_t graph_conn_read_json(graph_connection_t *conn, const cJSON *json);
 
-err_t graph_find_input_port_file(char *file, const uuid_t this_block_id, const char* port);
+err_t graph_find_input_port_file(cJSON **j_target, const uuid_t this_block_id,
+                                 const char* port);
 // err_t graph_find_port_file_multi(char **files, size_t *n_files, const uuid_t this_block_id, const char* port); TODO
 
 err_t graph_search_for_block(graph_block_t *block, const uuid_t id);
