@@ -60,6 +60,7 @@ target_compile_features(sgp4 PUBLIC c_std_23)
 # Link external libraries to project
 target_link_libraries(internal_libs PUBLIC
     sgp4
+    m
 )
 
 # -----------------------------------------------------------------------------

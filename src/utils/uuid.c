@@ -48,7 +48,7 @@ char* uuid_tostring_short(const uuid_t u) {
     len = strlen(u.val);
     if (len < 12) return NULL;
 
-    short_uuid = malloc(9);
+    short_uuid = malloc(13);
     if (short_uuid == NULL) return NULL;
 
     memcpy(short_uuid, u.val + len - 12, 12);

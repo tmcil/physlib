@@ -5,6 +5,10 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+
+# Set executable output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/c)
+
 add_subdirectory(src)
 
 target_compile_features(internal_libs PUBLIC c_std_23)
