@@ -56,16 +56,21 @@ err_t sgp4_eval(vector_t *teme_vec, const epoch_t epoch, const tle_t tle,
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------
     sgp4_config_t block_config = {0};
-    tle_t  tle                 = {0};
+    tim_t timespan             = {0};
+    tle_t tle                  = {0};
     // Block outputs ----------------------------------------------------------
     output_block_t outputs     = {0};
     eph_t eph                  = {0};
     // Block variables --------------------------------------------------------
     err_t err                  = NO_ERROR;
+    bool utc                   = true;
     char *file_written_buf     = NULL;
+    size_t i                   = 0;
+    vector_t vec               = {0};
+    epoch_t ep                 = {0};
     // JSON objects -----------------------------------------------------------
     cJSON *j_block_config = NULL, *j_outputs = NULL;
-    cJSON *j_tle = NULL, *j_eph = NULL;
+    cJSON *j_tle = NULL, *j_tim = NULL, *j_eph = NULL;
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
@@ -82,34 +87,55 @@ int main(int argc, char *argv[]) {
 
     // Read the TLE input
     err = graph_find_input_port_file(&j_tle, g_cmdline_args.block_id, "tle");
-    if (err) return ERR("Failed to find input file from block graph");
+    if (err) return ERR("Failed to find file at input port: tle");
     err = tle_read_json(&tle, j_tle);
     if (err) return ERR("Failed to load tle struct");
 
     // Read the TIM input
-
+    err = graph_find_input_port_file(&j_tim, g_cmdline_args.block_id, "interval");
+    if (err) return ERR("Failed to find file at input port: tim");
+    err = tim_read_json(&timespan, &utc, j_tim);
 
     // Evaluate the TLE along TIM with SGP4_eval. Stored in EPH
+    err = eph_init(&eph, tle.satellite_id, 0, 0, 1000.0); // SGP4 outputs in km
+    if (err) return ERR("Failed to inialise EPH product");
 
-    // Write the EPH
+    for (i = 0; i<timespan.n_epochs; i++) {
+        vector_reset(&vec);
+        epoch_reset(&ep);
 
-    // Add EPH to outputs
+        ep = timespan.epochs[i];
+        err = sgp4_eval(&vec, ep, tle, block_config.wgs_model);
+        if (err) return ERR("Failed to compute state vector at epoch [%d]", (int)i);
 
-    // Write the output JSON
+        err = eph_push(&eph, &vec, NULL, true, false);
+        if (err) return ERR("Failed to add state vector[%d] to EPH product", (int)i);
+    }
 
-/*     vector_t test_vec = {0};
-    const char* iso = "2026-10-11T12:00:00.000Z";
-    epoch_t test_ep = {0};
-    bool utc = true;
-    err = epoch_from_iso8601(&test_ep, &utc, iso, J2000);
-    if (err) return ERR("Failed to set epoch");
-    err = sgp4_eval(&test_vec, test_ep, tle, block_config.wgs_model);
-    if (err) return ERR("Failed to compute SV");
+    // Create the EPH product JSON
+    err = eph_create_json(&j_eph, &eph);
+    if (err) return ERR("Failed to convert product EPH to JSON");
+    err = working_dir_write(&file_written_buf, FILES, j_eph);
+    if (err) return ERR("Failed to write EPH JSON file");
+    cJSON_Delete(j_tle);
 
-    vector_print(test_vec) */;
+    // Initialise the output object
+    err = output_block_init(&outputs);
+    if (err) return ERR("Failed to initialise the output block for %s", g_cmdline_args.block_name);
+    // Push the EPH to the output port
+    err = output_block_push(&outputs, "ephemeris", file_written_buf);
+    if (err) return ERR("Failed to add EPH to the outputs");
+
+    // Write the block output
+    err = output_block_create_json(&j_outputs, &outputs);
+    if (err) return ERR("Failed to convert outputs to JSON");
+    err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
+    if (err) return ERR("Failed to write output file");
+    cJSON_Delete(j_outputs);
 
     // Free memory
     environment_done();
+    eph_reset(&eph);
 
     return NO_ERROR;
 }
