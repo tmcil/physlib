@@ -1,2 +1,3 @@
 rstream
+psycopg
 pika

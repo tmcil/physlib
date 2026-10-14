@@ -6,12 +6,15 @@ import time
 import pika
 
 from .environment import create_working_dir
+from .postgres import test_db_connection
 from .log import logger
 
 host = os.getenv("RABBITMQ_HOST", "")
 username = os.getenv("RABBITMQ_USERNAME", "")
 password = os.getenv("RABBITMQ_PASSWORD", "")
 queue = os.getenv("RABBITMQ_QUEUE", "")
+
+RABBITMQ_PORT = 5672
 
 if host == "":
     logger.error("Environment var: RABBITMQ_HOST is not set")
@@ -25,6 +28,8 @@ if password == "":
 if queue == "":
     logger.error("Environment var: RABBITMQ_QUEUE is not set")
     sys.exit(1)
+
+test_db_connection()
 
 
 def process_message(ch, method, properties, body):
@@ -73,7 +78,7 @@ while True:
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=host,
-                port=5672,
+                port=RABBITMQ_PORT,
                 credentials=credentials,
                 heartbeat=30,
                 blocked_connection_timeout=60,
