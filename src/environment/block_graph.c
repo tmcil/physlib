@@ -21,8 +21,6 @@ err_t graph_read_json(graph_t *graph, const cJSON *json) {
     graph->n_blocks = blockGraph_len;
     graph->blocks = malloc(blockGraph_len * sizeof(graph_block_t));
 
-    MSG("blockGraph_len: %d", (int)blockGraph_len);
-
     for (i = 0; i < blockGraph_len; i++) {
         blockGraph_el = cJSON_GetArrayItem(blockGraph, i);
         if (!cJSON_IsObject(blockGraph_el)) return ERR("Failed to read: blockGraph[%d]", i);
@@ -49,12 +47,8 @@ err_t graph_block_read_json(graph_block_t *block, const cJSON *json) {
     blockName = cJSON_GetObjectItemCaseSensitive(json, "block");
     if (!cJSON_IsString(blockName)) return ERR("Failed to read: block");
 
-    MSG("  block: %s", blockName->valuestring);
-
     blockId = cJSON_GetObjectItemCaseSensitive(json, "blockId");
     if (!cJSON_IsString(blockId)) return ERR("Failed to read: blockId");
-
-    MSG("  blockId: %s", blockId->valuestring);
 
     block->block = strdup(blockName->valuestring);
     err = uuid_set(&block->block_id, blockId->valuestring);
@@ -66,8 +60,6 @@ err_t graph_block_read_json(graph_block_t *block, const cJSON *json) {
     ports_len = cJSON_GetArraySize(ports);
     block->n_ports = ports_len;
     block->ports = malloc(ports_len * sizeof(graph_port_t));
-
-    MSG("  ports_len: %d", (int)ports_len);
 
     for (i = 0; i < ports_len; i++) {
         ports_el = cJSON_GetArrayItem(ports, i);
@@ -98,31 +90,21 @@ err_t graph_port_read_json(graph_port_t *port, const cJSON *json) {
     if (!cJSON_IsString(portId)) return ERR("Failed to read: portId");
     port->port_id = strdup(portId->valuestring);
 
-    MSG("    portId: %s", portId->valuestring);
-
     type = cJSON_GetObjectItemCaseSensitive(json, "type");
     if (!cJSON_IsString(type)) return ERR("Failed to read: type");
     port->type = strdup(type->valuestring);
-
-    MSG("    type: %s", type->valuestring);
 
     direction = cJSON_GetObjectItemCaseSensitive(json, "direction");
     if (!cJSON_IsString(direction)) return ERR("Failed to read: direction");
     port->direction = strdup(direction->valuestring);
 
-    MSG("    direction: %s", direction->valuestring);
-
     optional = cJSON_GetObjectItemCaseSensitive(json, "optional");
     if (!cJSON_IsBool(optional)) return ERR("Failed to read: optional");
     port->optional = (bool)cJSON_IsTrue(optional);
 
-    MSG("    optional: %d", (int)port->optional);
-
     array = cJSON_GetObjectItemCaseSensitive(json, "array");
     if (!cJSON_IsBool(array)) return ERR("Failed to read: array");
     port->array = (bool)cJSON_IsTrue(array);
-
-    MSG("    array: %d", (int)port->array);
 
     connections = cJSON_GetObjectItemCaseSensitive(json, "connections");
     if (!cJSON_IsArray(connections)) return ERR("Failed to read: connections");
@@ -130,8 +112,6 @@ err_t graph_port_read_json(graph_port_t *port, const cJSON *json) {
     connections_len = cJSON_GetArraySize(connections);
     port->n_connections = connections_len;
     port->connections = malloc(connections_len * sizeof(graph_connection_t));
-
-    MSG("    connections_len: %d", (int)connections_len);
 
     for (i = 0; i < connections_len; i++) {
         connections_el = cJSON_GetArrayItem(connections, i);
@@ -156,13 +136,9 @@ err_t graph_conn_read_json(graph_connection_t *conn, const cJSON *json) {
     err = uuid_set(&conn->block_id, blockId->valuestring);
     if (err) return ERR("Failed to convert blockId to UUID: %s", blockId->valuestring);
 
-    MSG("      blockId: %s", blockId->valuestring);
-
     portId = cJSON_GetObjectItemCaseSensitive(json, "portId");
     if (!cJSON_IsString(portId)) return ERR("Failed to read: portId");
     conn->port_id = strdup(portId->valuestring);
-
-    MSG("      portId: %s", portId->valuestring);
 
     return NO_ERROR;
 }

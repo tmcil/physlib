@@ -13,7 +13,7 @@ if working_dir == "":
     sys.exit(1)
 
 
-def create_working_dir(execution_id: uuid.UUID):
+def create_working_dir(execution_id: uuid.UUID) -> Path:
 
     # Clear the execution dir
     execution_dir = Path(working_dir) / str(execution_id)
@@ -32,6 +32,7 @@ def create_working_dir(execution_id: uuid.UUID):
     logs_dir.mkdir(parents=True)
 
     logger.info(f"Created working directory: {execution_dir!s}")
+    return execution_dir
 
 
 def check_mnt_connection():

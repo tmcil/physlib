@@ -113,7 +113,7 @@ err_t close_stderr_file() {
 err_t construct_message(char *constructed, const size_t len_constructed, 
                         const err_t error, const char *msg, va_list args){
     // Local variables
-    char error_char;
+    char status_str[8];
     struct tm utc;
     char timestamp[21];
     char formatted_msg[512];
@@ -130,16 +130,16 @@ err_t construct_message(char *constructed, const size_t len_constructed,
     // Select the correct level character, based on the err_t.
     switch(error) {
         case NO_ERROR:
-            error_char = 'I';
+            strcpy(status_str, "INFO\0");
             break;
         case ERROR:
-            error_char = 'E';
+            strcpy(status_str, "ERROR\0");
             break;
         case WARNING:
-            error_char = 'W';
+            strcpy(status_str, "WARNING\0");
             break;
         default:
-            error_char = ' ';
+            strcpy(status_str, "    \0");
             return ERR("Unsupported err_t value");
         }
 
@@ -151,8 +151,8 @@ err_t construct_message(char *constructed, const size_t len_constructed,
     }
 
     // Allocate the constructed string with the data filled in.
-    stat = snprintf(constructed, len_constructed, "[%s] [%c] %s\n", timestamp,
-                    error_char, formatted_msg);
+    stat = snprintf(constructed, len_constructed, "%s %s (__C) %s\n", timestamp,
+                    status_str, formatted_msg);
     if (stat < 0) return ERR("Failed to construct message");
     if ((size_t)stat >= len_constructed) return WAR("Message was truncated");
 
