@@ -5,7 +5,7 @@ import time
 
 import pika
 
-from .environment import create_working_dir
+from .environment import check_mnt_connection, create_working_dir
 from .log import logger
 
 host = os.getenv("RABBITMQ_HOST", "")
@@ -24,6 +24,15 @@ if password == "":
     sys.exit(1)
 if queue == "":
     logger.error("Environment var: RABBITMQ_QUEUE is not set")
+    sys.exit(1)
+
+logger.info("All environment variables are loaded")
+
+try:
+    check_mnt_connection()
+    logger.info("Good connection to persistent volume")
+except FileNotFoundError as exc:
+    logger.error(f"Bad connection to persistent volume: {exc}")
     sys.exit(1)
 
 

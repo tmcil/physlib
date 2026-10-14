@@ -38,3 +38,10 @@ def create_working_dir(message: dict):
     files_dir.mkdir(parents=True)
     logs_dir = execution_dir / "logs"
     logs_dir.mkdir(parents=True)
+
+
+def check_mnt_connection():
+    exists_file = Path(working_dir) / ".exists.txt"
+    if not exists_file.exists():
+        logger.error(f"Path does not exist: {exists_file!s}")
+        raise FileNotFoundError(f"Path does not exist: {exists_file!s}")
