@@ -13,18 +13,10 @@ if working_dir == "":
     sys.exit(1)
 
 
-def create_working_dir(message: dict):
-
-    # Check the UUID is valid
-    execution_id_str = message.get("execution_id", "")
-    try:
-        uuid.UUID(execution_id_str)
-    except (ValueError, TypeError, AttributeError) as exc:
-        logger.error(f"Malformed execution ID: {execution_id_str}")
-        raise ValueError("Invalid execution ID") from exc
+def create_working_dir(execution_id: uuid.UUID):
 
     # Clear the execution dir
-    execution_dir = Path(working_dir) / execution_id_str
+    execution_dir = Path(working_dir) / str(execution_id)
     if execution_dir.exists():
         shutil.rmtree(execution_dir)
     execution_dir.mkdir(parents=True)
@@ -38,3 +30,12 @@ def create_working_dir(message: dict):
     files_dir.mkdir(parents=True)
     logs_dir = execution_dir / "logs"
     logs_dir.mkdir(parents=True)
+
+    logger.info(f"Created working directory: {execution_dir!s}")
+
+
+def check_mnt_connection():
+    exists_file = Path(working_dir) / ".exists.txt"
+    if not exists_file.exists():
+        logger.error(f"Path does not exist: {exists_file!s}")
+        raise FileNotFoundError(f"Path does not exist: {exists_file!s}")
