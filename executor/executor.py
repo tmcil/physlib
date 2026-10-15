@@ -8,6 +8,7 @@ import pika
 
 from .environment import check_mnt_connection, create_working_dir
 from .log import logger
+from .order import determine_block_order
 from .postgres import pg_select_json, pg_update_status
 from .run import run_block
 
@@ -35,6 +36,7 @@ logger.info("All environment variables are loaded")
 
 
 def process_message(ch, method, properties, body):
+    logger.info("---------------------------------------------------------")
     logger.info("Recieved a new message from the queue")
 
     # Decode the JSON request body
@@ -56,7 +58,7 @@ def process_message(ch, method, properties, body):
 
         # Process the execution here --------------------------------------
 
-        # TODO: Mark the opflow as in progress in Postgres
+        # Mark the opflow as in progress in Postgres
         try:
             pg_update_status(execution_id, "RUNNING")
         except ValueError as exc:
@@ -116,16 +118,20 @@ def process_message(ch, method, properties, body):
                 )
                 raise SystemError(exc)
 
-        # TODO: Read the block list and compute the order of blocks
-        # Hard coded, for now
-        block_order = [
-            (uuid.UUID("db8101a1-b438-4a46-971e-cbc264492de6"), "BLOCK_INPUT_TIM"),
-            (uuid.UUID("ee512ac5-a494-4ad2-a3a6-ef4822dcd7e8"), "BLOCK_INPUT_TLE"),
-            (uuid.UUID("e66f001c-2bc4-4f46-99b6-d4c1f138f88c"), "BLOCK_SGP4"),
-        ]
+        # block_order = [
+        #     (uuid.UUID("db8101a1-b438-4a46-971e-cbc264492de6"), "BLOCK_INPUT_TIM"),
+        #     (uuid.UUID("ee512ac5-a494-4ad2-a3a6-ef4822dcd7e8"), "BLOCK_INPUT_TLE"),
+        #     (uuid.UUID("e66f001c-2bc4-4f46-99b6-d4c1f138f88c"), "BLOCK_SGP4"),
+        # ]
 
-        # TODO: Run the blocks in order
-        logger.info("---------------------------------------------------------")
+        # Read the block list and compute the order of blocks
+        try:
+            block_order = determine_block_order(block_graph)
+        except Exception:
+            logger.error("Failed to determine block order")
+            raise
+
+        # Run the blocks in order
         logger.info(f"EXECUTION STARTED: {execution_id!s}")
         execution_status: int = 0
         for block_id, block_name in block_order:
@@ -134,6 +140,7 @@ def process_message(ch, method, properties, body):
             except Exception:
                 logger.error("FAILED TO RUN BLOCK")
                 raise
+        logger.info(f"EXECUTION FINISHED: {execution_id!s}")
 
         # TODO: Pipe any log messages through the web socket
 

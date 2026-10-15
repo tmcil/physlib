@@ -23,9 +23,11 @@ def run_block(execution_id: uuid.UUID, block_name: str, block_id: uuid.UUID) -> 
         logger.error("Failed to construct commaned")
         raise
 
-    logger.info(f"RUNNING BLOCK : {block_id!s} {block_name}")
+    block_id_short = str(block_id).split("-")[-1]
+
+    logger.info(f"RUNNING BLOCK : {block_id_short} {block_name}")
     exit_code = subprocess.run(command, shell=True, check=False)
-    logger.info(f"BLOCK FINISHED: {block_id!s} {block_name}")
+    logger.info(f"BLOCK FINISHED: {block_id_short} {block_name}")
 
     if exit_code.returncode == 1:  # Error
         logger.error(f"BLOCK EXITED WITH STATUS ERR: {block_id!s} {block_name}")

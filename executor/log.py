@@ -1,10 +1,6 @@
 import logging
 from datetime import UTC, datetime
 
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(levelname)s (SYS) %(message)s"
-)
-
 
 class ISO8601Formatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
@@ -13,13 +9,10 @@ class ISO8601Formatter(logging.Formatter):
         )
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-)
+logging.basicConfig(level=logging.INFO)
 
 handler = logging.StreamHandler()
-handler.setFormatter(ISO8601Formatter("%(asctime)s %(levelname)s %(message)s"))
+handler.setFormatter(ISO8601Formatter("%(asctime)s %(levelname)s (EXC) %(message)s"))
 root = logging.getLogger()
 root.handlers.clear()
 root.addHandler(handler)

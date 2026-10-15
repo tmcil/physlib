@@ -39,6 +39,8 @@ err_t debug_msg(const err_t severity, const char *filepath, const int line,
         fflush(stderr_file);
     }
 
+    fflush(stdout);
+
     return severity;
 }
 
@@ -59,6 +61,8 @@ void msg(const char *message, ...) {
         fputs(line_buffer, stdout_file);
         fflush(stdout_file);
     }
+
+    fflush(stdout);
 
     return;
 }
