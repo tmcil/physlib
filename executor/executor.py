@@ -15,9 +15,8 @@ from .run import run_block
 host = os.getenv("RABBITMQ_HOST", "")
 username = os.getenv("RABBITMQ_USERNAME", "")
 password = os.getenv("RABBITMQ_PASSWORD", "")
-queue = os.getenv("RABBITMQ_QUEUE", "")
-
-RABBITMQ_PORT = 5672
+executions_queue = os.getenv("RABBITMQ_EXECUTION_QUEUE", "")
+port = int(os.getenv("RABBITMQ_PORT", ""))
 
 if host == "":
     logger.error("Environment var: RABBITMQ_HOST is not set")
@@ -28,8 +27,11 @@ if username == "":
 if password == "":
     logger.error("Environment var: RABBITMQ_PASSWORD is not set")
     sys.exit(1)
-if queue == "":
-    logger.error("Environment var: RABBITMQ_QUEUE is not set")
+if executions_queue == "":
+    logger.error("Environment var: RABBITMQ_EXECUTION_QUEUE is not set")
+    sys.exit(1)
+if port == "":
+    logger.error("Environment var: RABBITMQ_PORT is not set")
     sys.exit(1)
 
 logger.info("All environment variables are loaded")
@@ -43,7 +45,7 @@ def process_message(ch, method, properties, body):
     try:
         message = json.loads(body.decode("utf-8"))
     except Exception as exc:  # noqa: BLE001
-        logger.error(f"Failed to read message from queue: {queue}")
+        logger.error(f"Failed to read message from queue: {executions_queue}")
         raise SystemError(exc)
 
     # Check the UUID is valid
@@ -196,23 +198,23 @@ while True:
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=host,
-                port=RABBITMQ_PORT,
+                port=port,
                 credentials=credentials,
                 heartbeat=30,
                 blocked_connection_timeout=60,
             )
         )
         channel = connection.channel()
-        channel.queue_declare(queue=queue, durable=True)
+        channel.queue_declare(queue=executions_queue, durable=True)
 
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(
-            queue=queue,
+            queue=executions_queue,
             on_message_callback=process_message,
             auto_ack=False,
         )
 
-        logger.info("Consumer ready. Waiting for messages...")
+        logger.info(f"{executions_queue} consumer ready. Waiting for messages...")
         channel.start_consuming()
 
     except KeyboardInterrupt:
