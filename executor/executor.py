@@ -10,31 +10,16 @@ from .environment import check_mnt_connection, create_working_dir
 from .log import logger
 from .order import determine_block_order
 from .postgres import pg_select_json, pg_update_status
+from .rabbitmq import RabbitMQClient, execution_queue
 from .run import run_block
 
-host = os.getenv("RABBITMQ_HOST", "")
-username = os.getenv("RABBITMQ_USERNAME", "")
-password = os.getenv("RABBITMQ_PASSWORD", "")
-executions_queue = os.getenv("RABBITMQ_EXECUTION_QUEUE", "")
-port = int(os.getenv("RABBITMQ_PORT", ""))
-
-if host == "":
-    logger.error("Environment var: RABBITMQ_HOST is not set")
+# Connect to rabbitMQ
+rabbitmq = RabbitMQClient()
+try:
+    rabbitmq.connect()
+except Exception as exc:  # noqa: BLE001
+    logger.error(f"RabbitMQ connection error: {exc}")
     sys.exit(1)
-if username == "":
-    logger.error("Environment var: RABBITMQ_USERNAME is not set")
-    sys.exit(1)
-if password == "":
-    logger.error("Environment var: RABBITMQ_PASSWORD is not set")
-    sys.exit(1)
-if executions_queue == "":
-    logger.error("Environment var: RABBITMQ_EXECUTION_QUEUE is not set")
-    sys.exit(1)
-if port == "":
-    logger.error("Environment var: RABBITMQ_PORT is not set")
-    sys.exit(1)
-
-logger.info("All environment variables are loaded")
 
 
 def process_message(ch, method, properties, body):
@@ -45,7 +30,7 @@ def process_message(ch, method, properties, body):
     try:
         message = json.loads(body.decode("utf-8"))
     except Exception as exc:  # noqa: BLE001
-        logger.error(f"Failed to read message from queue: {executions_queue}")
+        logger.error("Failed to read message from queue")
         raise SystemError(exc)
 
     # Check the UUID is valid
@@ -66,8 +51,6 @@ def process_message(ch, method, properties, body):
         except ValueError as exc:
             logger.error("Failed to update status of execution in db")
             raise SystemError(exc)
-
-        # TODO: Open web socket for log messages
 
         # Create the file structure for the opflow
         try:
@@ -120,12 +103,6 @@ def process_message(ch, method, properties, body):
                 )
                 raise SystemError(exc)
 
-        # block_order = [
-        #     (uuid.UUID("db8101a1-b438-4a46-971e-cbc264492de6"), "BLOCK_INPUT_TIM"),
-        #     (uuid.UUID("ee512ac5-a494-4ad2-a3a6-ef4822dcd7e8"), "BLOCK_INPUT_TLE"),
-        #     (uuid.UUID("e66f001c-2bc4-4f46-99b6-d4c1f138f88c"), "BLOCK_SGP4"),
-        # ]
-
         # Read the block list and compute the order of blocks
         try:
             block_order = determine_block_order(block_graph)
@@ -138,13 +115,13 @@ def process_message(ch, method, properties, body):
         execution_status: int = 0
         for block_id, block_name in block_order:
             try:
-                execution_status |= run_block(execution_id, block_name, block_id)
+                execution_status |= run_block(
+                    execution_id, block_name, block_id, rabbitmq
+                )
             except Exception:
                 logger.error("FAILED TO RUN BLOCK")
                 raise
         logger.info(f"EXECUTION FINISHED: {execution_id!s}")
-
-        # TODO: Pipe any log messages through the web socket
 
         # Select the correct status, it can never be FAILED here, since 1's are
         # raised inside run_block()
@@ -183,7 +160,7 @@ def process_message(ch, method, properties, body):
         logger.info("Consumer ready. Waiting for messages...")
 
 
-while True:
+def main():
     # Check persistent volume mount is good
     try:
         check_mnt_connection()
@@ -192,33 +169,29 @@ while True:
         logger.error(f"Bad connection to persistent volume: {exc}")
         sys.exit(1)
 
-    # Connect with rabbitmq
+    # Consume the execution queue
     try:
-        credentials = pika.PlainCredentials(username, password)
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=host,
-                port=port,
-                credentials=credentials,
-                heartbeat=30,
-                blocked_connection_timeout=60,
+        while True:
+            if rabbitmq.consumer_channel is None:
+                logger.error("Consumer channel is not open")
+                raise RuntimeError("Consumer channel is not open")
+
+            rabbitmq.consumer_channel.basic_qos(prefetch_count=1)
+            rabbitmq.consumer_channel.basic_consume(
+                queue=execution_queue,
+                on_message_callback=process_message,
+                auto_ack=False,
             )
-        )
-        channel = connection.channel()
-        channel.queue_declare(queue=executions_queue, durable=True)
-
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(
-            queue=executions_queue,
-            on_message_callback=process_message,
-            auto_ack=False,
-        )
-
-        logger.info(f"{executions_queue} consumer ready. Waiting for messages...")
-        channel.start_consuming()
+            logger.info(f"{execution_queue} consumer ready. Waiting for messages...")
+            rabbitmq.consumer_channel.start_consuming()
 
     except KeyboardInterrupt:
         sys.exit(1)
     except Exception as exc:  # noqa: BLE001
         logger.error(f"RabbitMQ connection error: {exc}")
         time.sleep(5)
+
+
+if __name__ == "__main__":
+    main()
+    sys.exit(0)

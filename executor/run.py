@@ -3,19 +3,33 @@ import uuid
 from pathlib import Path
 
 from .log import logger
+from .rabbitmq import RabbitMQClient
 
 
 def construct_command(
     execution_id: uuid.UUID, block_name: str, block_id: uuid.UUID
-) -> str:
+) -> list[str]:
     dir = Path("./bin")
     bin = dir / block_name.lower()
-    command = f"./{bin!s} {execution_id!s} {block_id!s}"
+    command = [
+        f"./{bin!s}",
+        f"{execution_id!s}",
+        f"{block_id!s}",
+    ]
 
     return command
 
 
-def run_block(execution_id: uuid.UUID, block_name: str, block_id: uuid.UUID) -> int:
+def run_block(
+    execution_id: uuid.UUID,
+    block_name: str,
+    block_id: uuid.UUID,
+    rabbitmq: RabbitMQClient,
+) -> int:
+
+    if rabbitmq.publish_channel is None:
+        logger.error("Publish channel is not open")
+        raise RuntimeError("Publish channel is not open")
 
     try:
         command = construct_command(execution_id, block_name, block_id)
@@ -26,12 +40,32 @@ def run_block(execution_id: uuid.UUID, block_name: str, block_id: uuid.UUID) -> 
     block_id_short = str(block_id).split("-")[-1]
 
     logger.info(f"RUNNING BLOCK : {block_id_short} {block_name}")
-    exit_code = subprocess.run(command, shell=True, check=False)
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    )
 
-    if exit_code.returncode == 1:  # Error
+    if process.stdout is None:
+        logger.error("Failed to capture process output")
+        raise RuntimeError("Failed to capture process output")
+
+    for line in process.stdout:
+        message = line.rstrip("\r\n")
+        if message:
+            try:
+                rabbitmq.publish_log(execution_id, message)
+            except Exception as exc:  # noqa: BLE001
+                logger.error(f"Failed to publish log message: {exc}")
+                return 1
+
+    return_code = process.wait()
+
+    if return_code == 1:  # Error
         logger.error(f"BLOCK EXITED WITH STATUS ERR: {block_id!s} {block_name}")
-        raise subprocess.CalledProcessError(exit_code.returncode, command)
-    elif exit_code.returncode == 2:  # Warning
+        raise subprocess.CalledProcessError(return_code, command)
+    elif return_code == 2:  # Warning
         logger.warning(f"BLOCK EXITED WITH STATUS WAR: {block_id!s} {block_name}")
 
-    return exit_code.returncode
+    return return_code
