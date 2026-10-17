@@ -27,7 +27,6 @@ def run_block(execution_id: uuid.UUID, block_name: str, block_id: uuid.UUID) -> 
 
     logger.info(f"RUNNING BLOCK : {block_id_short} {block_name}")
     exit_code = subprocess.run(command, shell=True, check=False)
-    logger.info(f"BLOCK FINISHED: {block_id_short} {block_name}")
 
     if exit_code.returncode == 1:  # Error
         logger.error(f"BLOCK EXITED WITH STATUS ERR: {block_id!s} {block_name}")

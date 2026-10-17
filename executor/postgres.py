@@ -17,7 +17,8 @@ def pg_update_status(id: uuid.UUID, status: str):
         cur.execute(
             """
             UPDATE executions
-            SET status = %s
+            SET status = %s,
+                updated_at = NOW()
             WHERE id = %s
             """,
             (status, str(id)),
