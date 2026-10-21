@@ -23,8 +23,6 @@ typedef struct {
 } cov_t;
 
 typedef struct {
-    // Related satellite ID, -1 if not associated to an object
-    int satellite_id;
     // Central body
     int center_body;
     // Reference Frame
@@ -45,8 +43,8 @@ typedef struct {
 
 // ----------------------------------------------------------------------------
 
-err_t eph_init(eph_t *item, const int satellite_id, const int center_body,
-               const int reference_frame, const double meters_scale_factor);
+err_t eph_init(eph_t *item, const int center_body, const int reference_frame,
+               const double meters_scale_factor);
 err_t eph_push(eph_t *item, const vector_t *vec, const cov_t *cov,
               const bool add_vec, const bool add_cov);
 err_t eph_create_json(cJSON **json, const eph_t *item);

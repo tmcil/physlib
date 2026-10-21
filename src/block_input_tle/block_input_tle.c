@@ -32,11 +32,11 @@ int main(int argc, char *argv[]) {
     cJSON_Delete(j_block_config);
 
     // Fill the TLE type
-    tle.satellite_id = block_config.satellite_id;
-    tle.object_name = block_config.object_name; // TODO, load this from db
     snprintf(tle.line_1, sizeof(tle.line_1), "%s", block_config.line_1);
     snprintf(tle.line_2, sizeof(tle.line_2), "%s", block_config.line_2);
-    MSG("Successfully created TLE for: %s", tle.object_name);
+
+    MSG(" Input TLE[1]: %s", tle.line_1);
+    MSG(" Input TLE[2]: %s", tle.line_2);
 
     // Create the product JSON
     err = tle_create_json(&j_tle, &tle);
@@ -58,6 +58,8 @@ int main(int argc, char *argv[]) {
     err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
     if (err) return ERR("Failed to write output file");
     cJSON_Delete(j_outputs);
+
+    MSG("TLE successfully created");
 
     // Free memory
     environment_done();

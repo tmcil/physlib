@@ -37,7 +37,7 @@ err_t sgp4_eval(vector_t *teme_vec, const epoch_t epoch, const tle_t tle,
 
     parseLines(&satrec, line_1, line_2, (int)wgs);
     if (satrec.sgp4Error != 0) {
-        WAR("SGP4 error detected (%d) when parsing TLE for object: %s", satrec.sgp4Error, tle.object_name);
+        WAR("SGP4 error detected (%d) when parsing TLE for object", satrec.sgp4Error);
         if (satrec.sgp4Error == 1) WAR("Mean elements, ecc >= 1.0 or ecc < -0.001 or a < 0.95 er");
         if (satrec.sgp4Error == 2) WAR("Mean motion less than 0.0");
         if (satrec.sgp4Error == 3) WAR("Pert elements, ecc < 0.0  or  ecc > 1.0");
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     err = tim_read_json(&timespan, &utc, j_tim);
 
     // Evaluate the TLE along TIM with SGP4_eval. Stored in EPH
-    err = eph_init(&eph, tle.satellite_id, 0, 0, 1000.0); // SGP4 outputs in km
+    err = eph_init(&eph, 0, 0, 1000.0); // SGP4 outputs in km
     if (err) return ERR("Failed to inialise EPH product");
 
     for (i = 0; i<timespan.n_epochs; i++) {

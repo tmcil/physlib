@@ -10,14 +10,6 @@ err_t input_tle_config_read_json(input_tle_config_t *item, const cJSON *json) {
 
     if (item == NULL) return ERR("Cannot read JSON to NULL pointer");
 
-    aux = cJSON_GetObjectItemCaseSensitive(json, "objectName");
-    if (!cJSON_IsString(aux)) return ERR("Failed to read objectName");
-    item->object_name = strdup(aux->valuestring);
-
-    aux = cJSON_GetObjectItemCaseSensitive(json, "satelliteId");
-    if (!cJSON_IsNumber(aux)) return ERR("Failed to read satelliteId");
-    item->satellite_id = aux->valueint;
-
     aux = cJSON_GetObjectItemCaseSensitive(json, "line1");
     if (!cJSON_IsString(aux)) return ERR("Failed to read: line1");
     strncpy(item->line_1, aux->valuestring, sizeof(item->line_1) - 1);

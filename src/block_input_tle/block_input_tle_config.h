@@ -10,8 +10,6 @@
 // Module data structures -----------------------------------------------------
 
 typedef struct {
-    int satellite_id;
-    char *object_name;
     char line_1[70];
     char line_2[70];
 } input_tle_config_t;

@@ -56,6 +56,7 @@ def run_block(
         if message:
             try:
                 rabbitmq.publish_log(execution_id, message)
+                logger.info(" ".join(message.split(" ")[2:]))
             except Exception as exc:  # noqa: BLE001
                 logger.error(f"Failed to publish log message: {exc}")
                 return 1

@@ -6,6 +6,7 @@ import uuid
 
 import pika
 
+from .config import write_input_files
 from .environment import check_mnt_connection, create_working_dir
 from .log import logger
 from .order import determine_block_order
@@ -65,11 +66,6 @@ def process_message(ch, method, properties, body):
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to retrieve block graph")
             raise SystemError(exc)
-        try:
-            block_config = pg_select_json(execution_id, "block_config")
-        except Exception as exc:  # noqa: BLE001
-            logger.error("Failed to retrieve block config")
-            raise SystemError(exc)
 
         # Write the block graph into the working area
         f_block_graph = execution_dir / "inputs" / "block_graph.json"
@@ -81,27 +77,11 @@ def process_message(ch, method, properties, body):
             raise SystemError(exc)
 
         # Split the block config into individual JSON objects and write to inputs
-        block_config_list = block_config.get("blockConfigs", [])
-        if block_config_list == []:
-            raise SystemError("block_config is an empty list")
-        for block in block_config_list:
-            try:
-                filename = (
-                    f"{block['blockName']}_{block['blockId'].split('-')[-1]}.json"
-                )
-                f_block_config = execution_dir / "inputs" / filename
-            except KeyError as exc:
-                logger.error("Failed to find blockName/Id in block config")
-                raise SystemError(exc)
-
-            try:
-                with f_block_config.open("w", encoding="utf-8") as f:
-                    json.dump(block["config"], f, indent=4)
-            except Exception as exc:  # noqa: BLE001
-                logger.error(
-                    f"Failed to write block config file to: {f_block_config!s}"
-                )
-                raise SystemError(exc)
+        try:
+            write_input_files(block_graph, execution_dir)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Failed to write input files to disk")
+            raise SystemError(exc)
 
         # Read the block list and compute the order of blocks
         try:

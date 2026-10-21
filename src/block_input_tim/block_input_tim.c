@@ -51,6 +51,10 @@ int main(int argc, char *argv[]) {
 
     err = tim_init(&timespan, start, end, aux_stepsize);
     if (err) return ERR("Failed to compute timespan");
+    
+    MSG("Input start: %s", block_config.start);
+    MSG("Input end:   %s", block_config.start);
+    MSG("Generated %d epochs with a stepsize of %f seconds", timespan.n_epochs, aux_stepsize);
 
     // Create the product JSON
     err = tim_create_json(&j_tim, &timespan, utc);

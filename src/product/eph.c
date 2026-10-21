@@ -23,10 +23,6 @@ err_t eph_create_json(cJSON **json, const eph_t *item) {
     if (aux == NULL) return ERR("Failed to create json: type");
     cJSON_AddItemToObject(*json, "type", aux);
 
-    aux = cJSON_CreateNumber(item->satellite_id);
-    if (aux == NULL) return ERR("Failed to create json: satellite_id");
-    cJSON_AddItemToObject(*json, "satelliteId", aux);
-
     aux = cJSON_CreateNumber(item->center_body);
     if (aux == NULL) return ERR("Failed to create json: center_body");
     cJSON_AddItemToObject(*json, "centerBody", aux);
@@ -114,10 +110,6 @@ err_t eph_read_json(eph_t *item, const cJSON *json) {
 
     err = eph_reset(item);
     if (err) return ERR("Failed to reset eph_t");
-
-    aux = cJSON_GetObjectItemCaseSensitive(json, "satelliteId");
-    if (!cJSON_IsNumber(aux)) return ERR("Failed to read: satelliteId");
-    item->satellite_id = aux->valueint;
 
     aux = cJSON_GetObjectItemCaseSensitive(json, "centerBody");
     if (!cJSON_IsNumber(aux)) return ERR("Failed to read: centerBody");
@@ -252,8 +244,8 @@ err_t eph_push(eph_t *item, const vector_t *vec, const cov_t *cov,
 }
 
 // ----------------------------------------------------------------------------
-err_t eph_init(eph_t *item, const int satellite_id, const int center_body,
-               const int reference_frame, const double meters_scale_factor){
+err_t eph_init(eph_t *item, const int center_body, const int reference_frame,
+               const double meters_scale_factor){
     // Local variables
     err_t err = NO_ERROR;
     
@@ -262,7 +254,6 @@ err_t eph_init(eph_t *item, const int satellite_id, const int center_body,
     err = eph_reset(item);
     if (err) return ERR("Failed to reset existing ephemeris");
 
-    item->satellite_id = satellite_id;
     item->center_body = center_body;
     item->reference_frame = reference_frame;
     item->meters_scale_factor = meters_scale_factor;
@@ -280,7 +271,6 @@ err_t eph_reset(eph_t *item) {
     item->state_vectors = NULL;
     free(item->covariance_matrices);
     item->covariance_matrices = NULL;
-    item->satellite_id = -1;
     item->center_body = -1;
     item->reference_frame = -1;
     item->meters_scale_factor = -1;
@@ -292,7 +282,7 @@ err_t eph_reset(eph_t *item) {
 
 // ----------------------------------------------------------------------------
 bool eph_isreset(const eph_t *item) {
-    return (item->satellite_id==-1 && item->center_body==-1 &&
+    return (item->center_body==-1 &&
             item->reference_frame==-1 && item->n_datapoints==-1 &&
             !item->has_state_vectors && !item->has_covariance_matrices);
 }
