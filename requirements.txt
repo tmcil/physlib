@@ -2,3 +2,4 @@ rstream
 psycopg[binary]
 pika
 pyinstaller
+pydantic
