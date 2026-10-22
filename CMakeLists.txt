@@ -9,7 +9,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Set executable output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_subdirectory(src)
+add_subdirectory(src_c)
 
 target_compile_features(internal_libs PUBLIC c_std_23)
 target_compile_options(internal_libs PRIVATE
