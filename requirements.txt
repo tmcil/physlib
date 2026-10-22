@@ -1,3 +1,4 @@
 rstream
 psycopg[binary]
 pika
+pyinstaller
