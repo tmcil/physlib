@@ -12,9 +12,6 @@ def write_input_files(block_graph: dict, execution_dir: Path):
 
         # Read the config from the graph
         config = get_config(block)
-        if config == {}:
-            logger.error(f"No config found for block: {block.get('name', '')}")
-            raise SystemError("No config found for block")
 
         # Construct the filepath
         try:

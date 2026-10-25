@@ -1,11 +1,7 @@
-import os
-from pathlib import Path
-
-from src_py.environment.block_graph import BlockGraph, read_block_graph
+from src_py.environment.block_graph import BlockGraph, block_graph_read
 from src_py.environment.cmdline import CmdlineArgs, parse_cmdline
+from src_py.environment.paths import WORKING_DIR
 from src_py.utils.log import logger
-
-WORKING_DIR = Path(os.getenv("WORKING_DIR", ""))
 
 
 def environment_init() -> tuple[CmdlineArgs, BlockGraph]:
@@ -24,7 +20,7 @@ def environment_init() -> tuple[CmdlineArgs, BlockGraph]:
 
     # Read block graph
     try:
-        block_graph = read_block_graph(
+        block_graph = block_graph_read(
             WORKING_DIR / str(args.execution_id) / "inputs" / "block_graph.json"
         )
     except Exception:

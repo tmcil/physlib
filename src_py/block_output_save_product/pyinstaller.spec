@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['block_output_save_result.py'],
+    ['block_output_save_product.py'],
     pathex=['.'],
     binaries=[],
     datas=[],
@@ -23,7 +23,7 @@ exe = EXE(
     a.datas,
     [],
     exclude_binaries=False,
-    name='block_output_save_result',
+    name='block_output_save_product',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

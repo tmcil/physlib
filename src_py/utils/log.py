@@ -13,6 +13,9 @@ class ISO8601Formatter(logging.Formatter):
 logging.basicConfig(level=logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
+handler.addFilter(
+    lambda record: record.name != "pika" and not record.name.startswith("pika.")
+)
 handler.setFormatter(ISO8601Formatter("%(asctime)s %(levelname)s (_PY) %(message)s"))
 root = logging.getLogger()
 root.handlers.clear()

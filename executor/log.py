@@ -12,6 +12,9 @@ class ISO8601Formatter(logging.Formatter):
 logging.basicConfig(level=logging.INFO)
 
 handler = logging.StreamHandler()
+handler.addFilter(
+    lambda record: record.name != "pika" and not record.name.startswith("pika.")
+)
 handler.setFormatter(ISO8601Formatter("%(asctime)s %(levelname)s (EXC) %(message)s"))
 root = logging.getLogger()
 root.handlers.clear()
