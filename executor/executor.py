@@ -10,7 +10,7 @@ from .config import write_input_files
 from .environment import check_mnt_connection, create_working_dir
 from .log import logger
 from .order import determine_block_order
-from .postgres import pg_select_json, pg_update_status
+from .postgres import pg_select_json, pg_update_status, pg_clear_results
 from .rabbitmq import RabbitMQClient, execution_queue
 from .run import run_block
 
@@ -32,14 +32,14 @@ def process_message(ch, method, properties, body):
         message = json.loads(body.decode("utf-8"))
     except Exception as exc:  # noqa: BLE001
         logger.error("Failed to read message from queue")
-        raise SystemError(exc)
+        raise RuntimeError(exc)
 
     # Check the UUID is valid
     try:
         execution_id = uuid.UUID(message.get("execution_id", ""))
     except Exception as exc:
         logger.error("Malformed execution ID")
-        raise SystemError("Invalid execution ID") from exc
+        raise RuntimeError("Invalid execution ID") from exc
 
     try:
         logger.info(f"Execution ID: {execution_id}")
@@ -51,21 +51,28 @@ def process_message(ch, method, properties, body):
             pg_update_status(execution_id, "RUNNING")
         except ValueError as exc:
             logger.error("Failed to update status of execution in db")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
+
+        # Clear any previous results from the database
+        try:
+            pg_clear_results(execution_id)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Failed to clear previous results")
+            raise RuntimeError(exc)
 
         # Create the file structure for the opflow
         try:
             execution_dir = create_working_dir(execution_id)
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to create working directory for execution")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
 
         # Load the inputs from Postgres
         try:
             block_graph = pg_select_json(execution_id, "block_graph")
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to retrieve block graph")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
 
         # Write the block graph into the working area
         f_block_graph = execution_dir / "inputs" / "block_graph.json"
@@ -74,14 +81,14 @@ def process_message(ch, method, properties, body):
                 json.dump(block_graph, f, indent=4)
         except Exception as exc:  # noqa: BLE001
             logger.error(f"Failed to write block graph file to: {f_block_graph!s}")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
 
         # Split the block config into individual JSON objects and write to inputs
         try:
             write_input_files(block_graph, execution_dir)
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to write input files to disk")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
 
         # Read the block list and compute the order of blocks
         try:
@@ -117,7 +124,7 @@ def process_message(ch, method, properties, body):
             pg_update_status(execution_id, final_status)
         except ValueError as exc:
             logger.error("Failed to update status of execution in db")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
 
         # -----------------------------------------------------------------
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -129,7 +136,7 @@ def process_message(ch, method, properties, body):
             pg_update_status(execution_id, "FAILED")
         except ValueError as exc:
             logger.error("Failed to update status of execution in db")
-            raise SystemError(exc)
+            raise RuntimeError(exc)
 
         # Reject malformed messages without requeueing
         ch.basic_nack(

@@ -50,3 +50,21 @@ def pg_select_json(id: uuid.UUID, column: str) -> dict:
 
     logger.info(f"Retrieved {column} from db")
     return row[0]
+
+
+def pg_clear_results(id: uuid.UUID):
+    with psycopg.connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            UPDATE executions
+            SET results = '[]'::jsonb,
+                updated_at = NOW()
+            WHERE id = %s
+            """,
+            (str(id),),
+        )
+
+        if cur.rowcount == 0:
+            raise ValueError(f"No execution found with id {id!s}")
+
+    logger.info("Cleared previous results")

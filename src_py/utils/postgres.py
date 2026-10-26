@@ -25,13 +25,14 @@ def pg_publish_product(execution_id: uuid.UUID, type: str, product: str):
         cur.execute(
             """
             UPDATE executions
-            SET output_products = output_products || %s::jsonb
+            SET results = results || %s::jsonb,
+                updated_at = NOW()
             WHERE id = %s
             """,
             (json.dumps([message]), str(execution_id)),
         )
 
-    if cur.rowcount == 0:
-        raise ValueError(f"No execution found with id {execution_id!s}")
+        if cur.rowcount == 0:
+            raise ValueError(f"No execution found with id {execution_id!s}")
 
     logger.info(f"Output product is available: {product}")
