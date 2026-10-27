@@ -10,7 +10,7 @@ from .config import write_input_files
 from .environment import check_mnt_connection, create_working_dir
 from .log import logger
 from .order import determine_block_order
-from .postgres import pg_select_json, pg_update_status, pg_clear_results
+from .postgres import pg_clear_results, pg_select_json, pg_update_status
 from .rabbitmq import RabbitMQClient, execution_queue
 from .run import run_block
 

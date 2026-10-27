@@ -6,14 +6,20 @@ from pathlib import Path
 
 from .log import logger
 
-working_dir = os.getenv("EXECUTOR_WORKING_DIR", "")
 
-if working_dir == "":
-    logger.error("Environment var: EXECUTOR_WORKING_DIR is not set")
-    sys.exit(1)
+def create_working_dir(execution_id: uuid.UUID, test: bool = False) -> Path:
 
+    if test:
+        working_dir = "tests/snapshot/output"
+        for res in Path(working_dir).iterdir():
+            if res.is_dir():
+                shutil.rmtree(res)
+        logger.info("Cleared previous snapshot testing outputs")
+    else:
+        working_dir = os.getenv("EXECUTOR_WORKING_DIR", "")
 
-def create_working_dir(execution_id: uuid.UUID) -> Path:
+    if working_dir == "":
+        raise RuntimeError("EXECUTOR_WORKING_DIR is not set")
 
     # Clear the execution dir
     execution_dir = Path(working_dir) / str(execution_id)
@@ -40,3 +46,11 @@ def check_mnt_connection():
     if not exists_file.exists():
         logger.error(f"Path does not exist: {exists_file!s}")
         raise FileNotFoundError(f"Path does not exist: {exists_file!s}")
+
+
+def test_copy_inputs(execution_id: uuid.UUID):
+    output_dir = Path(f"tests/snapshot/output/{execution_id!s}/inputs/block_graph.json")
+    reference_dir = Path(
+        f"tests/snapshot/reference/{execution_id!s}/inputs/block_graph.json"
+    )
+    shutil.copy2(reference_dir, output_dir)
