@@ -30,11 +30,6 @@ typedef struct {
 
 // ----------------------------------------------------------------------------
 
-// err_t block_output_push(block_output_t *item, const output_t typ,
-//                         const char *path);
-// err_t block_output_create_json(cJSON **json, const block_output_t *item);
-// err_t block_output_read_json(block_output_t *item, const cJSON *json);
-
 err_t output_block_read_json(output_block_t *item, const cJSON *json);
 err_t output_block_create_json(cJSON **json, const output_block_t *item);
 err_t output_block_push(output_block_t *item, const char* port, const char* path);

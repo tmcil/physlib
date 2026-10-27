@@ -1,10 +1,10 @@
-#include "block_input_tim_config.h"
+#include "block_input_epo_config.h"
 
 // Module Variables -----------------------------------------------------------
 
 
 // ----------------------------------------------------------------------------
-err_t input_tim_config_read_json(input_tim_config_t *item, const cJSON *json) {
+err_t input_tim_config_read_json(input_epo_config_t *item, const cJSON *json) {
     // Local variables
     cJSON *aux = NULL;
 
@@ -21,10 +21,6 @@ err_t input_tim_config_read_json(input_tim_config_t *item, const cJSON *json) {
     aux = cJSON_GetObjectItemCaseSensitive(json, "stepsizeSeconds");
     if (!cJSON_IsNumber(aux)) return ERR("Failed to read JSON: stepsizeSeconds");
     item->stepsize_seconds = aux->valuedouble;
-
-    aux = cJSON_GetObjectItemCaseSensitive(json, "isSingle");
-    if (!cJSON_IsBool(aux)) return ERR("Failed to read JSON: isSingle");
-    item->is_single = (bool)cJSON_IsTrue(aux);
 
     return NO_ERROR;
 }

@@ -7,7 +7,7 @@ add_library(internal_libs STATIC
     
     # Input Blocks
     block_input_tle/block_input_tle_config.c
-    block_input_tim/block_input_tim_config.c
+    block_input_epo/block_input_epo_config.c
     
     # Process Blocks
     block_sgp4/block_sgp4_config.c
@@ -27,15 +27,19 @@ add_library(internal_libs STATIC
 
     # Product datatypes and methods
     product/eph.c
-    product/tim.c
+    product/epo.c
     product/tle.c
+    
+    # Core libraries
+    core/epoch.c
+    core/vector.c
+    core/matrix.c
+    core/cartsv.c
 
     # Tensor library
     tensor/vector.c
     tensor/matrix.c
 
-    # Epoch and Time library
-    time/epoch.c
 )
 target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(internal_libs PUBLIC c_std_23)
@@ -71,10 +75,10 @@ add_executable(block_input_tle
 )
 target_link_libraries(block_input_tle PRIVATE m internal_libs cjson)
 
-add_executable(block_input_tim
-    block_input_tim/block_input_tim.c
+add_executable(block_input_epo
+    block_input_epo/block_input_epo.c
 )
-target_link_libraries(block_input_tim PRIVATE m internal_libs cjson)
+target_link_libraries(block_input_epo PRIVATE m internal_libs cjson)
 
 add_executable(block_sgp4
     block_sgp4/block_sgp4.c

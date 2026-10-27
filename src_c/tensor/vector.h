@@ -6,7 +6,7 @@
  */
 
 #include "utils/error_handling.h"
-#include "time/epoch.h"
+#include "core/epoch.h"
 
 // Module data structures -----------------------------------------------------
 

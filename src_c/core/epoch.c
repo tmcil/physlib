@@ -1,0 +1,474 @@
+
+#include "epoch.h"
+
+
+/* ------------------------------------------------------------------------- */
+
+void epoch_zero(epoch_t *epo) {
+    epo->date1 = 0.0;
+    epo->date2 = 0.0;
+    epo->format = J2000;
+    epo->scale = UTC;
+    return;
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool epoch_iszerod(const epoch_t epo) {
+    return (epo.date1 < 1e-12 && epo.date2 < 1e-12 && epo.format == JD &&
+            epo.scale == UTC);
+}
+
+/* ------------------------------------------------------------------------- */
+
+epoch_delta_t delta_days(const double delta) {
+    bool negative = false;
+    double local_delta = 0.0;
+    double days = 0, hours = 0, minutes = 0, seconds = 0;
+    double fracday = 0.0, frachour = 0.0, fracmin = 0.0, fracsec = 0.0;
+    double millis = 0.0;
+
+    negative = delta < 0.0;
+    local_delta = fabs(delta);
+
+    fracday = modf(local_delta, &days);
+    hours = fracday * 24.0;
+    frachour = modf(hours, &hours);
+    minutes = frachour * 60.0;
+    fracmin = modf(minutes, &minutes);
+    seconds = fracmin * 60.0;
+    fracsec = modf(seconds, &seconds);
+    millis = fracsec * 1000.0;
+
+    return (epoch_delta_t) {
+        .negative = negative,
+        .days = (unsigned int) days,
+        .hours = (unsigned int) hours,
+        .minutes = (unsigned int) minutes,
+        .seconds = (unsigned int) seconds,
+        .millis = millis
+    };
+}
+
+/* ------------------------------------------------------------------------- */
+
+epoch_delta_t delta_hours(const double hours) {
+    double days = hours / 24.0;
+    return delta_days(days);
+}
+
+/* ------------------------------------------------------------------------- */
+
+epoch_delta_t delta_minutes(const double minutes) {
+    double days = minutes / 1440.0;
+    return delta_days(days);
+}
+
+/* ------------------------------------------------------------------------- */
+
+epoch_delta_t delta_seconds(const double seconds) {
+    double days = seconds / 86400.0;
+    return delta_days(days);
+}
+
+/* ------------------------------------------------------------------------- */
+
+epoch_delta_t delta_millis(const double millis) {
+    double days = millis / (86400.0 * 1000.0);
+    return delta_days(days);
+}
+
+/* ------------------------------------------------------------------------- */
+
+epoch_delta_t delta_from_epochs(const epoch_t epo1, const epoch_t epo2) {
+    epoch_t aux1 = {0}, aux2 = {0};
+    double days = 0.0;
+
+    // Switch to j2000 and subtract second component, avoids precision loss
+    epoch_copy(&aux1, epo1);
+    epoch_copy(&aux2, epo2);
+    epoch_switch_format(&aux1, J2000);
+    epoch_switch_format(&aux2, J2000);
+    days = aux2.date2 - aux1.date1;
+    return delta_days(days);
+}
+
+/* ------------------------------------------------------------------------- */
+
+double delta_to_days(const epoch_delta_t delta) {
+    int sign = (delta.negative) ? -1 : 1;
+    return (sign * (delta.days + delta.hours/24.0 + delta.minutes/1440.0 +
+                    delta.seconds/86400.0 + delta.millis/(86400.0*1000.0)));
+}
+
+/* ------------------------------------------------------------------------- */
+
+int epoch_from_delta(epoch_t *epo, const epoch_t ref, const epoch_delta_t delta) {
+    double days = delta_to_days(delta);
+    epo->scale = ref.scale;
+    epo->format = ref.format;
+    epo->date1 = ref.date1;
+    epo->date2 = ref.date2 + days;
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int epoch_copy(epoch_t *dst, const epoch_t src) {
+    if (dst == NULL) return 1;
+    memcpy(dst, &src, sizeof(epoch_t));
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int epoch_now(epoch_t *epo) {
+    time_t now = time(NULL);
+    struct tm current_time;
+
+    if (now == (time_t)-1 || gmtime_r(&now, &current_time) == NULL) {
+        return -1;
+    }
+
+    int year = current_time.tm_year + 1900;
+    int month = current_time.tm_mon + 1;
+
+    epo->scale = UTC;
+    epoch_switch_format(epo, JD);
+
+    epo->date2 = 0.0;
+    epo->date1 = (
+        367 * year
+        - (int)(7 * (year + (int)((month + 9) / 12)) / 4)
+        + (int)(275 * month / 9)
+        + current_time.tm_mday
+        + 1721013.5
+        + ((current_time.tm_sec / 60.0 + current_time.tm_min) / 60.0
+           + current_time.tm_hour) / 24.0
+    );
+
+    epoch_switch_format(epo, J2000);
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int epoch_switch_format(epoch_t *epo, epoch_format_t format) {
+    double rem = 0.0;
+    double new1 = 0.0, new2 = 0.0;
+    if (epo->format == format) return 0;
+
+    // Must avoid computing (epo->date1 + epo->date2) to avoid precision loss
+    switch (format) {
+        case MJD:
+            new1 = 2400000.5;
+            break;
+        case J2000:
+            new1 = 2451545.0;
+            break;
+        case JD:
+            // Unavoidable here, since by definition the user is requesting the
+            // combined value
+            new1 = epo->date1 + epo->date2;
+            break;
+        default:
+            return 1;
+    }
+
+    rem = epo->date1 - new1;
+    new2 = epo->date2 + rem;
+
+    epo->format = format;
+    epo->date1 = new1;
+    epo->date2 = new2;
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool epoch_less(const epoch_t epo1, const epoch_t epo2) {
+    epoch_t aux1 = {0}, aux2 = {0};
+    epoch_copy(&aux1, epo1);
+    epoch_copy(&aux2, epo2);
+    epoch_switch_format(&aux1, J2000);
+    epoch_switch_format(&aux2, J2000);
+
+    return (aux1.date2 < aux2.date2);
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool epoch_greater(const epoch_t epo1, const epoch_t epo2) {
+    return epoch_less(epo2, epo1);
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool epoch_equal(const epoch_t epo1, const epoch_t epo2, const epoch_delta_t tolerance) {
+    epoch_t aux1 = {0}, aux2 = {0};
+    epoch_copy(&aux1, epo1);
+    epoch_copy(&aux2, epo2);
+    epoch_switch_format(&aux1, J2000);
+    epoch_switch_format(&aux2, J2000);
+
+    return fabs(aux1.date2 - aux2.date2) < delta_to_days(tolerance);
+}
+
+/* ------------------------------------------------------------------------- */
+
+/* Checks an epoch exists within a given interval                            */
+/*  |<---------------------------- acceptable --------------------------->|  */
+/*  |       lower                                             upper       |  */
+/*  |<--tol-->|-------------------------------------------------|<--tol-->|  */
+bool epoch_between(const epoch_t epo, const epoch_t lower, const epoch_t upper, const epoch_delta_t tolerance) {
+    epoch_t lower_bound = {0}, upper_bound = {0};
+    epoch_delta_t lower_tol = delta_days(-fabs(delta_to_days(tolerance)));
+    epoch_delta_t upper_tol = delta_days(fabs(delta_to_days(tolerance)));
+    epoch_from_delta(&lower_bound, lower, lower_tol);
+    epoch_from_delta(&upper_bound, upper, upper_tol);
+
+    if (epoch_less(epo, lower_bound)) return false;
+    if (epoch_greater(epo, upper_bound)) return false;
+    return true;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int epoch_from_iso8601(epoch_t *epo, const char *iso) {
+    int iso_len = 0;
+    int year, month, day, hour, minute;
+    double second;
+
+
+    if (iso==NULL) return 1;
+
+    iso_len = (int)strlen(iso);
+    if (iso_len == 23) {
+        epo->scale = UT1;
+    } else if (iso_len == 24) {
+        epo->scale = UTC;
+    } else {
+        return 1;
+    }
+
+    // Check seperators
+    if (iso[4] != '-' || iso[7] != '-' || iso[10] != 'T' || iso[13] != ':' ||
+        iso[16] != ':') {
+        return 1;
+    }
+
+    // Parse date
+    year = atoi(iso+0);
+    month = atoi(iso+5);
+    day = atoi(iso+8);
+    hour = atoi(iso+11);
+    minute = atoi(iso+14);
+    second = atof(iso+17);
+
+    // Check for valid date
+    // Allow 61 seconds for leap seconds, in some applications
+    if (month < 1 || month > 12 ||
+        day < 1 || day > 31 ||
+        hour < 0 || hour > 23 ||
+        minute < 0 || minute > 59 ||
+        second < 0 || second > 61.0) {
+        return 1;
+    }
+
+    if (year < 1900 || year > 2100) {
+        return 1;
+    }
+
+    // Convert to julian date
+    if (epoch_switch_format(epo, JD)) return 1;
+    epo->date2 = 0.0;
+    epo->date1 = (
+        367 * year - (int)(7*(year + 
+        (int)(((double)(month)+9)/12))/4) +
+        (int)(275*month/9) + day + 1721013.5 +
+        ((second/60 + minute)/60 + hour)/24
+    );
+
+    if (epoch_switch_format(epo, J2000)) return 1;
+
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
+    int err = 0;
+    epoch_t aux_epoch = epoch;
+    int J, a, n, A, i, b, j, l;
+    int year, month, day, hour, minute;
+    double second;
+    double fracday, total_seconds;
+
+    if (iso == NULL) return 1;
+    if (iso_len < 25) return 1;
+
+    err = epoch_switch_format(&aux_epoch, JD);
+    if (err) return 1;
+
+    if (aux_epoch.date1 <= 0.0) {
+        return 1;
+    }
+
+    J = (int)floor(aux_epoch.date1 + 0.5);
+    fracday =  aux_epoch.date1 + 0.5 - J;
+
+    a = J + 68569;
+    n = 4 * a / 146097;
+    A = a - (146097 * n + 3) / 4;
+    i = 4000 * (A + 1) / 1461001;
+    b = A - 1461 * i / 4 + 31;
+    j = 80 * b / 2447;
+
+    day = b - 2447 * j / 80;
+
+    l = j / 11;
+    month = j + 2 - 12 * l;
+    year = 100 * (n - 49) + i + l;
+
+    total_seconds = fracday * 86400.0;
+
+    hour = (int)(total_seconds / 3600.0);
+    total_seconds -= hour * 3600.0;
+
+    minute = (int)(total_seconds / 60.0);
+    second = total_seconds - minute * 60.0;
+
+    // Check for valid date
+    // Allow 61 seconds for leap seconds, in some applications
+    if (month < 1 || month > 12 ||
+        day < 1 || day > 31 ||
+        hour < 0 || hour > 23 ||
+        minute < 0 || minute > 59 ||
+        second < 0 || second > 61.0) {
+        return 1;
+    }
+
+    if (year < 1900 || year > 2100) {
+        return 1;
+    }
+
+    if (epoch.scale == UTC) {
+        snprintf(iso, iso_len, "%04d-%02d-%02dT%02d:%02d:%06.3fZ",
+                 year, month, day, hour, minute, second);
+    } else {
+        snprintf(iso, iso_len, "%04d-%02d-%02dT%02d:%02d:%06.3f",
+                 year, month, day, hour, minute, second);
+    }
+
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int interval_init(interval_t *interval, const size_t capacity) {
+    int i = 0;
+    if (interval == NULL) return 1;
+    if (capacity <= 0) return 1;
+    if (interval_is_allocated(interval)) interval_free(interval);
+
+    interval->capacity = capacity;
+    interval->epochs = malloc(capacity * sizeof(epoch_t));
+    if (interval->epochs == NULL) {
+        interval->capacity = 0;
+        return 1;
+    }
+    for (i = 0; i < capacity; i++) {
+        epoch_zero(&interval->epochs[i]);
+    }
+
+    interval->n_epochs = 0;
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool interval_is_allocated(const interval_t *interval) {
+    if (interval == NULL) return false;
+    return (interval->epochs != NULL && interval->capacity != 0 && interval->n_epochs != 0);
+}
+
+/* ------------------------------------------------------------------------- */
+
+void interval_free(interval_t *interval) {
+    if (interval_is_allocated(interval)) {
+        free(interval->epochs);
+        interval->epochs = NULL;
+        interval->capacity = 0;
+        interval->n_epochs = 0;
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+int interval_push(interval_t *interval, const epoch_t epoch) {
+    epoch_t *aux = NULL;
+    size_t new_capacity = interval->capacity;
+    if (!interval_is_allocated(interval)) return 1;
+
+    if (interval->n_epochs > 0) {
+        // If adding to an existing list, check the epoch is after the previous
+        if (epoch_less(epoch, interval->epochs[interval->n_epochs-1])) return 1;
+    }
+
+    if (interval->n_epochs >= interval->capacity) {
+        new_capacity = (interval->capacity == 0) ? 1 : 2 * interval->capacity;
+        aux = realloc(interval->epochs, new_capacity * sizeof(epoch_t));
+        if (aux == NULL) return 1;
+        interval->epochs = aux;
+        interval->capacity = new_capacity;
+    }
+
+    interval->epochs[interval->n_epochs] = epoch;
+    interval->n_epochs += 1;
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
+int interval_linear(interval_t *interval, const epoch_t start, const epoch_t end,
+                    const epoch_delta_t stepsize) {
+    size_t i = 0;
+    size_t n_epochs = 0;
+    double span_days = 0.0;
+    double stepsize_days = 0.0;
+    epoch_t previous_epoch = {0};
+
+    if (epoch_iszerod(start)) return 1;
+    if (epoch_iszerod(end)) return 1;
+    if (stepsize.negative == true) return 1;
+    if (epoch_less(end, start) || epoch_equal(start, end, delta_millis(0.001))) {
+        // In this case, return an interval with a single element == start
+        if (interval_init(interval, 1)) return 1;
+        if (interval_push(interval, start)) return 1;
+        return 0;
+    }
+
+    epoch_delta_t span = delta_from_epochs(start, end);
+    span_days = delta_to_days(span);
+    stepsize_days = delta_to_days(stepsize);
+    if (stepsize_days*86400*1000 <= 1) return 1;  // milliseconds check
+    n_epochs = (size_t) ceil(span_days/stepsize_days + 1);
+
+    if (interval_init(interval, n_epochs)) return 1;
+    interval->epochs[0] = start;
+    previous_epoch = start;
+    for (i = 1; i < n_epochs; i++) {
+        if (i == n_epochs - 1) {
+            interval->epochs[i] = end;
+        } else {
+            epoch_from_delta(&interval->epochs[i], previous_epoch, stepsize);
+        }
+        previous_epoch = interval->epochs[i];
+    }
+    
+    interval->n_epochs = n_epochs;
+
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
