@@ -25,7 +25,6 @@ except Exception as exc:  # noqa: BLE001
 
 def process_message(ch, method, properties, body):
     logger.info("---------------------------------------------------------")
-    logger.info("Recieved a new message from the queue")
 
     # Decode the JSON request body
     try:
@@ -108,7 +107,6 @@ def process_message(ch, method, properties, body):
             except Exception:
                 logger.error("FAILED TO RUN BLOCK")
                 raise
-        logger.info(f"EXECUTION FINISHED: {execution_id!s}")
 
         # Select the correct status, it can never be FAILED here, since 1's are
         # raised inside run_block()
@@ -119,6 +117,8 @@ def process_message(ch, method, properties, body):
                 final_status = "WARNING"
             case _:
                 final_status = "UNKNOWN"
+
+        logger.info(f"EXECUTION FINISHED ({final_status}): {execution_id!s}")
 
         try:
             pg_update_status(execution_id, final_status)

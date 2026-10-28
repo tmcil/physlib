@@ -14,7 +14,6 @@ def create_working_dir(execution_id: uuid.UUID, test: bool = False) -> Path:
         for res in Path(working_dir).iterdir():
             if res.is_dir():
                 shutil.rmtree(res)
-        logger.info("Cleared previous snapshot testing outputs")
     else:
         working_dir = os.getenv("EXECUTOR_WORKING_DIR", "")
 
@@ -37,11 +36,11 @@ def create_working_dir(execution_id: uuid.UUID, test: bool = False) -> Path:
     logs_dir = execution_dir / "logs"
     logs_dir.mkdir(parents=True)
 
-    logger.info(f"Created working directory: {execution_dir!s}")
     return execution_dir
 
 
 def check_mnt_connection():
+    working_dir = os.getenv("EXECUTOR_WORKING_DIR", "")
     exists_file = Path(working_dir) / ".exists.txt"
     if not exists_file.exists():
         logger.error(f"Path does not exist: {exists_file!s}")

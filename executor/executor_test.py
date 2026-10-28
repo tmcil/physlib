@@ -61,12 +61,6 @@ def test_run_block(
 
     return_code = process.wait()
 
-    if return_code == 1:  # Error
-        logger.error(f"BLOCK EXITED WITH STATUS ERR: {block_id!s} {block_name}")
-        raise subprocess.CalledProcessError(return_code, command)
-    elif return_code == 2:  # Warning
-        logger.warning(f"BLOCK EXITED WITH STATUS WAR: {block_id!s} {block_name}")
-
     return return_code
 
 
@@ -90,8 +84,6 @@ def parse_cmdline() -> CmdlineArgs:
 def main():
 
     try:
-        logger.info(f"Execution ID: {args.execution_id!s}")
-
         try:
             execution_dir = create_working_dir(args.execution_id, test=True)
             test_copy_inputs(args.execution_id)
@@ -133,7 +125,18 @@ def main():
             except Exception:
                 logger.error("FAILED TO RUN BLOCK")
                 raise
-        logger.info(f"EXECUTION FINISHED: {args.execution_id!s}")
+
+        # Select the correct status, it can never be FAILED here, since 1's are
+        # raised inside run_block()
+        match execution_status:
+            case 0:
+                final_status = "SUCCESS"
+            case 2:
+                final_status = "WARNING"
+            case _:
+                final_status = "UNKNOWN"
+
+        logger.info(f"EXECUTION FINISHED ({final_status}): {args.execution_id!s}")
 
     except Exception as exc:
         logger.error(f"Execution Failed: {exc}")

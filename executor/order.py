@@ -96,5 +96,4 @@ def determine_block_order(block_graph: dict) -> list[tuple[uuid.UUID, str]]:
         if uuid.UUID(block.get("blockId", "")) == block_id
     ]
 
-    logger.info("Determined block order from block graph")
     return order_named

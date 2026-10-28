@@ -4,7 +4,7 @@ export WORKING_DIR=tests/snapshot/output
 
 for dir in tests/snapshot/reference/*/; do
     uuid=$(basename "$dir")
-    echo "Running executor test for $uuid"
+    echo "Running snapshot test: $uuid"
     python3 -m executor.executor_test "$uuid"
 
     if [ $? -ne 0 ]; then

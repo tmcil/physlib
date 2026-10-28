@@ -37,9 +37,6 @@ def run_block(
         logger.error("Failed to construct commaned")
         raise
 
-    block_id_short = str(block_id).split("-")[-1]
-
-    logger.info(f"RUNNING BLOCK : {block_id_short} {block_name}")
     process = subprocess.Popen(
         command,
         stdout=subprocess.PIPE,
@@ -62,11 +59,5 @@ def run_block(
                 return 1
 
     return_code = process.wait()
-
-    if return_code == 1:  # Error
-        logger.error(f"BLOCK EXITED WITH STATUS ERR: {block_id!s} {block_name}")
-        raise subprocess.CalledProcessError(return_code, command)
-    elif return_code == 2:  # Warning
-        logger.warning(f"BLOCK EXITED WITH STATUS WAR: {block_id!s} {block_name}")
 
     return return_code
