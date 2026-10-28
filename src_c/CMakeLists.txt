@@ -57,6 +57,11 @@ add_library(sgp4 STATIC
 target_include_directories(sgp4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(sgp4 PUBLIC c_std_23)
 
+file(GLOB SOFA_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/external/sofa/*.c")
+add_library(sofa STATIC ${SOFA_SOURCES})
+target_include_directories(sofa PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(sofa PUBLIC c_std_23)
+
 # Link external libraries to project
 target_link_libraries(internal_libs PUBLIC
     sgp4
