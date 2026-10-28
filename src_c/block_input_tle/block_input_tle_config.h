@@ -5,7 +5,7 @@
  */
 
 #include "external/cJSON.h"
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 
 // Module data structures -----------------------------------------------------
 

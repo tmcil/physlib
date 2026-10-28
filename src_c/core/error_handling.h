@@ -48,9 +48,9 @@ typedef enum {
 
 // Write a level 0 message to all open outputs.
 #define MSG(...) msg(__VA_ARGS__)
-// Write a level 2 debug messaage to all open outputs, included stderr.
+// Write a level 2 debug message to all open outputs, included stderr.
 #define ERR(...) debug_msg(ERROR, __FILE__, __LINE__, __VA_ARGS__)
-// Write a level 1 debug messaage to all open outputs.
+// Write a level 1 debug message to all open outputs.
 #define WAR(...) debug_msg(WARNING, __FILE__, __LINE__, __VA_ARGS__)
 
 /**

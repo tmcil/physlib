@@ -9,6 +9,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "error_handling.h"
+
 
 typedef enum {
     JD,

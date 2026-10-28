@@ -8,7 +8,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 #include "utils/uuid.h"
 
 // Module data structures -----------------------------------------------------

@@ -15,7 +15,6 @@ add_library(internal_libs STATIC
     # Output Blocks
 
     # Utilities
-    utils/error_handling.c
     utils/file_io.c
     utils/uuid.c
 
@@ -31,6 +30,7 @@ add_library(internal_libs STATIC
     product/tle.c
     
     # Core libraries
+    core/error_handling.c
     core/epoch.c
     core/vector.c
     core/matrix.c

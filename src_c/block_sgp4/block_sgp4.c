@@ -7,7 +7,7 @@
 #include "block_sgp4_config.h"
 
 #include "external/cJSON.h"
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 #include "block_common/block_output.h"
 #include "product/eph.h"
 #include "product/tle.h"

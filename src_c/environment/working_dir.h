@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 #include "parse_cmdline.h"
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 #include "utils/file_io.h"
 #include "external/cJSON.h"
 

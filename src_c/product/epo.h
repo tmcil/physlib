@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 #include "external/cJSON.h"
 #include "core/epoch.h"
 

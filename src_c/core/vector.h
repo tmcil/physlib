@@ -8,6 +8,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "error_handling.h"
+
 
 typedef struct {
     double *values;

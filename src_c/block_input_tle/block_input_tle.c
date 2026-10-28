@@ -8,7 +8,7 @@
 #include "product/tle.h"
 #include "environment/environment.h"
 #include "external/cJSON.h"
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------

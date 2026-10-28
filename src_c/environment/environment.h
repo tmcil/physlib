@@ -10,7 +10,7 @@
 #include "working_dir.h"
 #include "parse_cmdline.h"
 #include "block_graph.h"
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 
 // Module data structures -----------------------------------------------------
 

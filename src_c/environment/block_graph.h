@@ -10,7 +10,7 @@
 #include "block_common/block_output.h"
 #include "working_dir.h"
 #include "external/cJSON.h"
-#include "utils/error_handling.h"
+#include "core/error_handling.h"
 #include "utils/uuid.h"
 
 // Module data structures -----------------------------------------------------

@@ -1,9 +1,9 @@
 #ifndef LINALG_H
 #define LINALG_H
 
+#include "error_handling.h"
 #include "matrix.h"
 #include "vector.h"
-
 
 /* ------------------------------------------------------------------------- */
 

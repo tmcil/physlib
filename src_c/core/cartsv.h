@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "error_handling.h"
 #include "epoch.h"
 #include "matrix.h"
 #include "orbit_frame.h"

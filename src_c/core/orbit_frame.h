@@ -1,6 +1,8 @@
 #ifndef ORBIT_FRAME_H
 #define ORBIT_FRAME_H
 
+#include "error_handling.h"
+
 
 typedef enum {
     ORBIT_FRAME_J2000,
