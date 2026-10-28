@@ -36,10 +36,6 @@ add_library(internal_libs STATIC
     core/matrix.c
     core/cartsv.c
 
-    # Tensor library
-    tensor/vector.c
-    tensor/matrix.c
-
 )
 target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(internal_libs PUBLIC c_std_23)

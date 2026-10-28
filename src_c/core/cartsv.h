@@ -39,4 +39,19 @@ int cartsv_rotate(cartsv_t *out, const orbit_frame_t out_frame,
 
 /* ------------------------------------------------------------------------- */
 
+int cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity);
+
+/* ------------------------------------------------------------------------- */
+
+bool cartsv_array_is_allocated(const cartsv_array_t *trajectory);
+
+/* ------------------------------------------------------------------------- */
+
+void cartsv_array_free(cartsv_array_t *trajectory);
+
+/* ------------------------------------------------------------------------- */
+
+int cartsv_array_push(cartsv_array_t *trajectory, const cartsv_t statevector);
+
+/* ------------------------------------------------------------------------- */
 #endif

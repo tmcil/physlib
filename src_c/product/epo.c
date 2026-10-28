@@ -15,8 +15,6 @@ err_t epo_read_json(interval_t *item, const cJSON *json) {
     size_t arr_len = 0;
 
     if (json == NULL) return ERR("NULL cJSON argument passed");
-    err = epo_reset(item);
-    if (err) return ERR("Failed to reset interval_t");
 
     aux_arr = cJSON_GetObjectItemCaseSensitive(json, "values");
     if (!cJSON_IsArray(aux_arr)) return ERR("Failed to read epochs array in JSON");

@@ -11,7 +11,7 @@
 
 typedef struct {
     double *values;
-    int dims;
+    size_t dims;
 } vector_t;
 
 

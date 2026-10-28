@@ -94,11 +94,11 @@ int matrix_print(char *msg, const int msg_len, const matrix_t mat) {
 
     written = snprintf(msg + offset, msg_len - offset,
                        "matrix_t (rows=%d, cols=%d): [",
-                       mat.rows, mat.cols);
+                       (int)mat.rows, (int)mat.cols);
     if (written < 0 || written >= msg_len - offset) return 1;
     offset += written;
 
-    for (int row = 0; row < mat.rows; row++) {
+    for (size_t row = 0; row < mat.rows; row++) {
         const char *row_sep = (row == 0) ? " " : ", ";
 
         written = snprintf(msg + offset, msg_len - offset,
@@ -106,7 +106,7 @@ int matrix_print(char *msg, const int msg_len, const matrix_t mat) {
         if (written < 0 || written >= msg_len - offset) return 1;
         offset += written;
 
-        for (int col = 0; col < mat.cols; col++) {
+        for (size_t col = 0; col < mat.cols; col++) {
             const char *sep = (col == 0) ? " " : ", ";
 
             written = snprintf(msg + offset, msg_len - offset,
@@ -136,7 +136,7 @@ double matrix_get(const matrix_t mat, const int row, const int col) {
 
 int matrix_set(matrix_t *mat, const int row, const int col, const double value) {
     if (!matrix_is_allocated(mat)) return 1;
-    if (row >= mat->rows || col >= mat->cols) return 1;
+    if (row >= (int)mat->rows || col >= (int)mat->cols) return 1;
     mat->values[(row*mat->cols) + col] = value;
     return 0;
 }
@@ -144,8 +144,8 @@ int matrix_set(matrix_t *mat, const int row, const int col, const double value) 
 /* ------------------------------------------------------------------------- */
 
 int matrix_fill(matrix_t *mat, const double fill_with) {
-    int i = 0;
-    int j = 0;
+    size_t i = 0;
+    size_t j = 0;
     if (!matrix_is_allocated(mat)) return 1;
     for (i = 0; i < mat->rows; i++) {
         for (j = 0; j < mat->cols; j++) {
@@ -158,8 +158,8 @@ int matrix_fill(matrix_t *mat, const double fill_with) {
 /* ------------------------------------------------------------------------- */
 
 int matrix_scale(matrix_t *mat, const double scale) {
-    int i = 0;
-    int j = 0;
+    size_t i = 0;
+    size_t j = 0;
     if (!matrix_is_allocated(mat)) return 1;
     for (i = 0; i < mat->rows; i++) {
         for (j = 0; j < mat->cols; j++) {
@@ -173,8 +173,8 @@ int matrix_scale(matrix_t *mat, const double scale) {
 
 int matrix_add(matrix_t *sum, const matrix_t mat1, const matrix_t mat2) {
     int status = 0;
-    int i = 0;
-    int j = 0;
+    size_t i = 0;
+    size_t j = 0;
     if (!matrix_is_allocated(&mat1)) return 1;
     if (!matrix_is_allocated(&mat2)) return 1;
     if (mat1.rows != mat2.rows || mat1.cols != mat2.cols) return 1;
@@ -197,8 +197,8 @@ int matrix_add(matrix_t *sum, const matrix_t mat1, const matrix_t mat2) {
 
 int matris_sub(matrix_t *mat1_minus_mat2, const matrix_t mat1, const matrix_t mat2) {
     int status = 0;
-    int i = 0;
-    int j = 0;
+    size_t i = 0;
+    size_t j = 0;
     if (!matrix_is_allocated(&mat1)) return 1;
     if (!matrix_is_allocated(&mat2)) return 1;
     if (mat1.rows != mat2.rows || mat1.cols != mat2.cols) return 1;
@@ -221,8 +221,8 @@ int matris_sub(matrix_t *mat1_minus_mat2, const matrix_t mat1, const matrix_t ma
 
 int matrix_transpose(matrix_t *mat_T, const matrix_t mat) {
     int status = 0;
-    int i = 0;
-    int j = 0;
+    size_t i = 0;
+    size_t j = 0;
     if (!matrix_is_allocated(&mat)) return 1;
 
     if (matrix_init(mat_T, mat.cols, mat.rows)) return 1;
@@ -320,8 +320,8 @@ int matrix3_inv(matrix_t *inverse, const matrix_t mat);
 
 bool matrix_equal(const matrix_t mat1, const matrix_t mat2, const double tolerance) {
     bool equal = true;
-    int i = 0;
-    int j = 0;
+    size_t i = 0;
+    size_t j = 0;
     if (mat1.rows != mat2.rows || mat1.cols != mat2.cols) return false;
     if (!matrix_is_allocated(&mat1) || !matrix_is_allocated(&mat2)) return false;
 

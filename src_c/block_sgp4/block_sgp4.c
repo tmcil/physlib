@@ -11,23 +11,23 @@
 #include "block_common/block_output.h"
 #include "product/eph.h"
 #include "product/tle.h"
-#include "product/tim.h"
+#include "product/epo.h"
 #include "environment/environment.h"
 #include "environment/block_graph.h"
 
 #include "external/SGP4.h"
 #include "external/TLE.h"
-err_t sgp4_eval(vector_t *teme_vec, const epoch_t epoch, const tle_t tle,
+err_t sgp4_eval(cartsv_t *teme_vec, const epoch_t epoch, const tle_t tle,
                 const wgs_model_t wgs) {
     // Local variables
     err_t err = NO_ERROR;
     TLE satrec = {0};
+    epoch_t satrec_epoch = {0};
     double mins_since_epoch = 0.0f;
     char line_1[70];
     char line_2[70];
 
-    vector_reset(teme_vec);
-    if (epoch_isreset(epoch)) return ERR("Empty epoch passed to function");
+    if (epoch_iszerod(epoch)) return ERR("Empty epoch passed to function");
     if (tle_isreset(&tle)) return ERR("Emtpy TLE passed to function");
 
     memcpy(line_1, tle.line_1, 70);
@@ -45,10 +45,20 @@ err_t sgp4_eval(vector_t *teme_vec, const epoch_t epoch, const tle_t tle,
         if (satrec.sgp4Error == 5) WAR("Epoch elements are sub-orbital");
         if (satrec.sgp4Error == 6) WAR("Satellite has decayed");
     }
-    mins_since_epoch = (epoch_days(epoch) - (double)satrec.epoch) * 1440;
-    getRV(&satrec, mins_since_epoch, &teme_vec->vec[0], &teme_vec->vec[3]);
+
+    epoch_zero(&satrec_epoch);
+    satrec_epoch.format = JD;
+    satrec_epoch.scale = UTC;
+    satrec_epoch.date1 = (double)satrec.epoch;
+    satrec_epoch.date2 = 0.0;
+    epoch_switch_format(&satrec_epoch, J2000);
+    epoch_delta_t delta = delta_from_epochs(satrec_epoch, epoch);
+
+    mins_since_epoch = delta_to_days(delta) * 1440.0;
+    getRV(&satrec, mins_since_epoch, teme_vec->r.values, teme_vec->v.values);
 
     teme_vec->epoch = epoch;
+    teme_vec->frame = ORBIT_FRAME_TEME;
 
     return NO_ERROR;
 }
@@ -56,21 +66,19 @@ err_t sgp4_eval(vector_t *teme_vec, const epoch_t epoch, const tle_t tle,
 int main(int argc, char *argv[]) {
     // Block inputs -----------------------------------------------------------
     sgp4_config_t block_config = {0};
-    tim_t timespan             = {0};
+    interval_t timespan        = {0};
     tle_t tle                  = {0};
     // Block outputs ----------------------------------------------------------
     output_block_t outputs     = {0};
-    eph_t eph                  = {0};
+    cartsv_array_t eph         = {0};
     // Block variables --------------------------------------------------------
     err_t err                  = NO_ERROR;
-    bool utc                   = true;
     char *file_written_buf     = NULL;
     size_t i                   = 0;
-    vector_t vec               = {0};
-    epoch_t ep                 = {0};
+    cartsv_t statevector       = {0};
     // JSON objects -----------------------------------------------------------
     cJSON *j_block_config = NULL, *j_outputs = NULL;
-    cJSON *j_tle = NULL, *j_tim = NULL, *j_eph = NULL;
+    cJSON *j_tle = NULL, *j_epo = NULL, *j_eph = NULL;
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
@@ -91,24 +99,33 @@ int main(int argc, char *argv[]) {
     err = tle_read_json(&tle, j_tle);
     if (err) return ERR("Failed to load tle struct");
 
-    // Read the TIM input
-    err = graph_find_input_port_file(&j_tim, g_cmdline_args.block_id, "interval");
+    // Read the EPO input
+    err = graph_find_input_port_file(&j_epo, g_cmdline_args.block_id, "interval");
     if (err) return ERR("Failed to find file at input port: tim");
-    err = tim_read_json(&timespan, &utc, j_tim);
+    err = epo_read_json(&timespan, j_epo);
+    if (err) return ERR("Failed to parse EPO json");
 
-    // Evaluate the TLE along TIM with SGP4_eval. Stored in EPH
-    err = eph_init(&eph, 0, 0, 1000.0); // SGP4 outputs in km
+    if (timespan.n_epochs < 1) return ERR("Empty EPO interval");
+    MSG("Generating an EPH with %d datapoints", (int)timespan.n_epochs);
+
+    err = cartsv_array_init(&eph, timespan.n_epochs);
     if (err) return ERR("Failed to inialise EPH product");
 
-    for (i = 0; i<timespan.n_epochs; i++) {
-        vector_reset(&vec);
-        epoch_reset(&ep);
+    // Evaluate the TLE along EPO with SGP4_eval. Stored in EPH
+    // err = eph_init(&eph, 0, 0, 1000.0); // SGP4 outputs in km
 
-        ep = timespan.epochs[i];
-        err = sgp4_eval(&vec, ep, tle, block_config.wgs_model);
+    // TODO: Rotate this to actually be in J2000, currently in TEME
+    statevector.frame = ORBIT_FRAME_J2000;
+    for (i = 0; i<timespan.n_epochs; i++) {
+        epoch_copy(&statevector.epoch, timespan.epochs[i]);
+        vector_init(&statevector.r, 3);
+        vector_init(&statevector.v, 3);
+        matrix_init_identity(&statevector.cov, 6);
+
+        err = sgp4_eval(&statevector, timespan.epochs[i], tle, block_config.wgs_model);
         if (err) return ERR("Failed to compute state vector at epoch [%d]", (int)i);
 
-        err = eph_push(&eph, &vec, NULL, true, false);
+        err = cartsv_array_push(&eph, statevector);
         if (err) return ERR("Failed to add state vector[%d] to EPH product", (int)i);
     }
 
@@ -135,7 +152,8 @@ int main(int argc, char *argv[]) {
 
     // Free memory
     environment_done();
-    eph_reset(&eph);
+    cartsv_array_free(&eph);
+    interval_free(&timespan);
 
     return NO_ERROR;
 }

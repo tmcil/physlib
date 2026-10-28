@@ -61,11 +61,11 @@ int vector_print(char *msg, const int msg_len, const vector_t vec) {
     if (msg == NULL || msg_len <= 0) return 1;
     if (!vector_is_allocated(&vec)) return 1;
 
-    written = snprintf(msg + offset, msg_len - offset, "vector_t (len=%d): [", vec.dims);
+    written = snprintf(msg + offset, msg_len - offset, "vector_t (len=%d): [", (int)vec.dims);
     if (written < 0 || written >= msg_len - offset) return 1;
     offset += written;
 
-    for (int i = 0; i < vec.dims; i++) {
+    for (size_t i = 0; i < vec.dims; i++) {
         const char *sep = (i == 0) ? " " : ", ";
 
         written = snprintf(msg + offset, msg_len - offset, "%s%.3f", sep, vec.values[i]);
@@ -92,7 +92,7 @@ double vector_get(const vector_t vec, const int index) {
 
 int vector_set(vector_t *vec, const int index, const double value) {
     if (!vector_is_allocated(vec)) return 1;
-    if (index >= vec->dims) return 1;
+    if (index >= (int)vec->dims) return 1;
     if (index < 0) return 1;
     vec->values[index] = value;
     return 0;
@@ -101,7 +101,7 @@ int vector_set(vector_t *vec, const int index, const double value) {
 /* ------------------------------------------------------------------------- */
 
 int vector_fill(vector_t *vec, const double fill_with) {
-    int i = 0;
+    size_t i = 0;
     if (!vector_is_allocated(vec)) return 1;
     for (i = 0; i < vec->dims; i++) {
         vec->values[i] = fill_with;
@@ -112,7 +112,7 @@ int vector_fill(vector_t *vec, const double fill_with) {
 /* ------------------------------------------------------------------------- */
 
 int vector_scale(vector_t *vec, const double scale) {
-    int i = 0;
+    size_t i = 0;
     if (!vector_is_allocated(vec)) return 1;
     for (i = 0; i < vec->dims; i++) {
         vec->values[i] *= scale;
@@ -123,7 +123,7 @@ int vector_scale(vector_t *vec, const double scale) {
 /* ------------------------------------------------------------------------- */
 
 int vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2) {
-    int i = 0;
+    size_t i = 0;
     if (!vector_is_allocated(&vec1)) return 1;
     if (!vector_is_allocated(&vec2)) return 1;
     if (vec1.dims != vec2.dims) return 1;
@@ -138,7 +138,7 @@ int vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2) {
 /* ------------------------------------------------------------------------- */
 
 int vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t vec2) {
-    int i = 0;
+    size_t i = 0;
     if (!vector_is_allocated(&vec1)) return 1;
     if (!vector_is_allocated(&vec2)) return 1;
     if (vec1.dims != vec2.dims) return 1;
@@ -153,7 +153,7 @@ int vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t ve
 /* ------------------------------------------------------------------------- */
 
 int vector_norm(double *norm, const vector_t vec) {
-    int i = 0;
+    size_t i = 0;
     double sq_sum = 0.0;
     if (norm == NULL) return 1;
     if (!vector_is_allocated(&vec)) return 1;
@@ -167,7 +167,7 @@ int vector_norm(double *norm, const vector_t vec) {
 /* ------------------------------------------------------------------------- */
 
 int vector_unit(vector_t *unit, const vector_t vec) {
-    int i = 0;
+    size_t i = 0;
     double norm = 0.0;
     if (!vector_is_allocated(&vec)) return 1;
     if (unit == NULL) return 1;
@@ -184,7 +184,7 @@ int vector_unit(vector_t *unit, const vector_t vec) {
 /* ------------------------------------------------------------------------- */
 
 int vector_dot(double *dot_product, const vector_t vec1, const vector_t vec2) {
-    int i = 0;
+    size_t i = 0;
     if (!vector_is_allocated(&vec1)) return 1;
     if (!vector_is_allocated(&vec2)) return 1;
     if (dot_product == NULL) return 1;
@@ -218,7 +218,7 @@ int vector3_cross(vector_t *cross, const vector_t vec1, const vector_t vec2) {
 
 bool vector_equal(const vector_t vec1, const vector_t vec2, const double tolerance) {
     bool equal = true;
-    int i = 0;
+    size_t i = 0;
     if (vec1.dims != vec2.dims) return false;
     if (!vector_is_allocated(&vec1) || !vector_is_allocated(&vec2)) return false;
 

@@ -366,7 +366,7 @@ int epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
 /* ------------------------------------------------------------------------- */
 
 int interval_init(interval_t *interval, const size_t capacity) {
-    int i = 0;
+    size_t i = 0;
     if (interval == NULL) return 1;
     if (capacity <= 0) return 1;
     if (interval_is_allocated(interval)) interval_free(interval);

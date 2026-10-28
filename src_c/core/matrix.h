@@ -10,8 +10,8 @@
 
 typedef struct {
     double *values;
-    int rows;
-    int cols;
+    size_t rows;
+    size_t cols;
 } matrix_t;
 
 

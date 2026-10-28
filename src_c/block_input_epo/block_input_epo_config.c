@@ -4,7 +4,7 @@
 
 
 // ----------------------------------------------------------------------------
-err_t input_tim_config_read_json(input_epo_config_t *item, const cJSON *json) {
+err_t input_epo_config_read_json(input_epo_config_t *item, const cJSON *json) {
     // Local variables
     cJSON *aux = NULL;
 
