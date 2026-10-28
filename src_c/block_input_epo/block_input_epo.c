@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert end date to epoch: %s", block_config.end);
 
     MSG("Start epoch: %s", block_config.start);
-    MSG("End epoch  : %s", block_config.start);
+    MSG("End epoch  : %s", block_config.end);
     MSG("Generating an interval with timestep: %02f seconds", block_config.stepsize_seconds);
 
     err = interval_linear(&timespan, start, end, delta_seconds(block_config.stepsize_seconds));

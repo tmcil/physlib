@@ -89,7 +89,7 @@ epoch_delta_t delta_from_epochs(const epoch_t epo1, const epoch_t epo2) {
     epoch_copy(&aux2, epo2);
     epoch_switch_format(&aux1, J2000);
     epoch_switch_format(&aux2, J2000);
-    days = aux2.date2 - aux1.date1;
+    days = aux2.date2 - aux1.date2;
     return delta_days(days);
 }
 
@@ -389,7 +389,7 @@ err_t interval_init(interval_t *interval, const size_t capacity) {
 
 bool interval_is_allocated(const interval_t *interval) {
     if (interval == NULL) return false;
-    return (interval->epochs != NULL && interval->capacity != 0 && interval->n_epochs != 0);
+    return (interval->epochs != NULL && interval->capacity != 0);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -441,7 +441,7 @@ err_t interval_linear(interval_t *interval, const epoch_t start, const epoch_t e
     if (epoch_iszerod(start)) return ERR("Start time is zerod");
     if (epoch_iszerod(end)) return ERR("End time is zerod");
     if (stepsize.negative == true) return ERR("Negative stepsize");
-    if (epoch_less(end, start) || epoch_equal(start, end, delta_millis(0.001))) {
+    if (epoch_less(end, start) || epoch_equal(start, end, delta_millis(1))) {
         // In this case, return an interval with a single element == start
         if (interval_init(interval, 1)) return ERR("Failed to init interval");
         if (interval_push(interval, start)) return ERR("Failed to push epoch");

@@ -16,6 +16,13 @@ err_t cartsv_init(cartsv_t *sv, const int dims, const orbit_frame_t frame) {
 
 /* ------------------------------------------------------------------------- */
 
+bool cartsv_is_allocated(const cartsv_t *sv) {
+    if (sv == NULL) return false;
+    return (vector_is_allocated(&sv->r) && vector_is_allocated(&sv->v) &&
+            matrix_is_allocated(&sv->cov) && !epoch_iszerod(sv->epoch));
+}
+/* ------------------------------------------------------------------------- */
+
 void cartsv_free(cartsv_t *sv) {
     sv->frame = ORBIT_FRAME_J2000;
     epoch_zero(&sv->epoch);
@@ -23,6 +30,24 @@ void cartsv_free(cartsv_t *sv) {
     vector_free(&sv->v);
     matrix_free(&sv->cov);
     return;
+}
+
+/* ------------------------------------------------------------------------- */
+
+err_t cartsv_copy(cartsv_t *dst, const cartsv_t src) {
+    if (dst == NULL) return ERR("Destination cartsv pointer is NULL");
+    if (!cartsv_is_allocated(&src)) return ERR("Source cartsv is not allocated");
+    if (cartsv_is_allocated(dst) && dst == &src) return ERR("Source and destiantion are aliased");
+    if (cartsv_is_allocated(dst)) cartsv_free(dst);
+
+    if (cartsv_init(dst, src.r.dims, src.frame)) return ERR("Failed to initialise destination vector");
+    memcpy(dst->cov.values, src.cov.values, src.cov.cols * src.cov.rows * sizeof(double));
+    memcpy(dst->r.values, src.r.values, src.r.dims * sizeof(double));
+    memcpy(dst->v.values, src.v.values, src.v.dims * sizeof(double));
+    epoch_copy(&dst->epoch, src.epoch);
+    dst->frame = src.frame;
+
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -55,8 +80,7 @@ err_t cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity) {
 
 bool cartsv_array_is_allocated(const cartsv_array_t *trajectory) {
     if (trajectory == NULL) return false;
-    return (trajectory->statevectors != NULL && trajectory->capacity != 0 &&
-            trajectory->n_statevectors != 0);
+    return (trajectory->statevectors != NULL && trajectory->capacity != 0);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -79,6 +103,7 @@ void cartsv_array_free(cartsv_array_t *trajectory) {
 /* ------------------------------------------------------------------------- */
 
 err_t cartsv_array_push(cartsv_array_t *trajectory, const cartsv_t statevector) {
+    err_t err = NO_ERROR;
     cartsv_t *aux = NULL;
     size_t new_capacity = 0;
     if (!cartsv_array_is_allocated(trajectory)) return ERR("array is not allocated");
@@ -97,7 +122,8 @@ err_t cartsv_array_push(cartsv_array_t *trajectory, const cartsv_t statevector) 
         trajectory->capacity = new_capacity;
     }
 
-    trajectory->statevectors[trajectory->n_statevectors] = statevector;
+    err = cartsv_copy(&trajectory->statevectors[trajectory->n_statevectors], statevector);
+    if (err) return ERR("Failed to copy statevector into array");
     trajectory->n_statevectors += 1;
     return NO_ERROR;
 }

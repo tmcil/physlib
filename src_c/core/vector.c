@@ -31,7 +31,7 @@ err_t vector_copy(vector_t *dst, const vector_t src) {
     if (vector_is_allocated(dst) && dst->values == src.values) return ERR("Source and destination vectors alias");
     if (vector_is_allocated(dst)) vector_free(dst);
 
-    if (vector_init(dst, src.dims)) return ERR("Failed to initialize destination vector");
+    if (vector_init(dst, src.dims)) return ERR("Failed to initialise destination vector");
     memcpy(dst->values, src.values, src.dims * sizeof(double));
     return NO_ERROR;
 }
