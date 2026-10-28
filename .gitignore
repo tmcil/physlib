@@ -4,5 +4,6 @@ build
 */__pycache__
 __pycache__
 tests/snapshot/output/*
+**/*.template
 
 !**.gitkeep
