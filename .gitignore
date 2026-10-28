@@ -1,8 +1,8 @@
 build
-*.json
-*.std*
 .venv
+.env
 */__pycache__
 __pycache__
 tests/snapshot/output/*
-.env
+
+!**.gitkeep

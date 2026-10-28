@@ -1,0 +1,8 @@
+{
+	"block":	"BLOCK_SGP4",
+	"blockId":	"9d88dabd-b981-4a4e-89dc-d06678d600e1",
+	"ports":	[{
+			"portId":	"ephemeris",
+			"file":	"BLOCK_SGP4_00_d06678d600e1.json"
+		}]
+}

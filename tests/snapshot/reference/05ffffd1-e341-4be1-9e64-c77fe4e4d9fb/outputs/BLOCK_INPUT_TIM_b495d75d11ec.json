@@ -1,0 +1,8 @@
+{
+	"block":	"BLOCK_INPUT_TIM",
+	"blockId":	"197616df-54a2-422c-906e-b495d75d11ec",
+	"ports":	[{
+			"portId":	"interval",
+			"file":	"BLOCK_INPUT_TIM_00_b495d75d11ec.json"
+		}]
+}

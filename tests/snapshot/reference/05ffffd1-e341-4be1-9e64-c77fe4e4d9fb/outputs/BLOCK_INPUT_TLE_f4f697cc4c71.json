@@ -1,0 +1,8 @@
+{
+	"block":	"BLOCK_INPUT_TLE",
+	"blockId":	"0774309f-d64c-4b39-8562-f4f697cc4c71",
+	"ports":	[{
+			"portId":	"tle",
+			"file":	"BLOCK_INPUT_TLE_00_f4f697cc4c71.json"
+		}]
+}

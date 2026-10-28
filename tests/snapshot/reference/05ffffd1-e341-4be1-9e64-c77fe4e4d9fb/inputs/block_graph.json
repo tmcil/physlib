@@ -1,0 +1,195 @@
+{
+    "blockGraph": [
+        {
+            "block": "BLOCK_SGP4",
+            "ports": [
+                {
+                    "type": "EPO",
+                    "array": false,
+                    "portId": "interval",
+                    "optional": false,
+                    "direction": "input",
+                    "connections": [
+                        {
+                            "portId": "interval",
+                            "blockId": "197616df-54a2-422c-906e-b495d75d11ec"
+                        }
+                    ]
+                },
+                {
+                    "type": "TLE",
+                    "array": false,
+                    "portId": "tle",
+                    "optional": false,
+                    "direction": "input",
+                    "connections": [
+                        {
+                            "portId": "tle",
+                            "blockId": "0774309f-d64c-4b39-8562-f4f697cc4c71"
+                        }
+                    ]
+                },
+                {
+                    "type": "EPH",
+                    "array": false,
+                    "portId": "ephemeris",
+                    "optional": true,
+                    "direction": "output",
+                    "connections": []
+                }
+            ],
+            "config": {
+                "check": [],
+                "combo": [
+                    {
+                        "name": "wgsModel",
+                        "value": 3,
+                        "options": [
+                            {
+                                "name": "WGS-72 (Old)",
+                                "value": 1,
+                                "helpMessage": "WGS-72 low-precision model - Legacy model defined in 1972 in 'Spacetrack Report #3'. Not recommended for use unless required for data comparisons with legacy systems."
+                            },
+                            {
+                                "name": "WGS-72",
+                                "value": 2,
+                                "helpMessage": "WGS-72 model - original 72 model refined in 2006 in 'Spacetrack Report #3: Rev 2.' Designed to mitigate ephemeris differences between WGS-72 and WGS-84."
+                            },
+                            {
+                                "name": "WGS-84",
+                                "value": 3,
+                                "helpMessage": "WGS-84 model - latest model defined in 1984. Recommended for highest accurary state vectors."
+                            }
+                        ],
+                        "enableIf": null,
+                        "helpName": "WGS Model",
+                        "disableIf": null,
+                        "helpMessage": "The World Geodetic System - a set of constant parameters that describe the reference ellipsoid of the Earth."
+                    }
+                ],
+                "float": [],
+                "string": [],
+                "integer": [],
+                "dateandtime": []
+            },
+            "blockId": "9d88dabd-b981-4a4e-89dc-d06678d600e1",
+            "position": {
+                "x": 283,
+                "y": 172
+            }
+        },
+        {
+            "block": "BLOCK_INPUT_TLE",
+            "ports": [
+                {
+                    "type": "TLE",
+                    "array": false,
+                    "portId": "tle",
+                    "optional": false,
+                    "direction": "output",
+                    "connections": [
+                        {
+                            "portId": "tle",
+                            "blockId": "9d88dabd-b981-4a4e-89dc-d06678d600e1"
+                        }
+                    ]
+                }
+            ],
+            "config": {
+                "check": [],
+                "combo": [],
+                "float": [],
+                "string": [
+                    {
+                        "name": "line1",
+                        "value": "1 00005U 58002B   26277.81742469  .00000374  00000-0  45153-3 0  9990",
+                        "enableIf": null,
+                        "helpName": "TLE Line 1",
+                        "disableIf": null,
+                        "helpMessage": "The first line of the TLE. This should be exactly 69 characters long.",
+                        "maximumLength": 100,
+                        "minimumLength": 10
+                    },
+                    {
+                        "name": "line2",
+                        "value": "2 00005  34.2618 335.9657 1839097 272.8607  66.4089 10.86066529455200",
+                        "enableIf": null,
+                        "helpName": "TLE Line 2",
+                        "disableIf": null,
+                        "helpMessage": "The second line of the TLE. This should be exactly 69 characters long.",
+                        "maximumLength": 69,
+                        "minimumLength": 69
+                    }
+                ],
+                "integer": [],
+                "dateandtime": []
+            },
+            "blockId": "0774309f-d64c-4b39-8562-f4f697cc4c71",
+            "position": {
+                "x": 1.7332425928443058,
+                "y": 258.9954492583385
+            }
+        },
+        {
+            "block": "BLOCK_INPUT_EPO",
+            "ports": [
+                {
+                    "type": "EPO",
+                    "array": false,
+                    "portId": "interval",
+                    "optional": false,
+                    "direction": "output",
+                    "connections": [
+                        {
+                            "portId": "interval",
+                            "blockId": "9d88dabd-b981-4a4e-89dc-d06678d600e1"
+                        }
+                    ]
+                }
+            ],
+            "config": {
+                "check": [
+                ],
+                "combo": [],
+                "float": [
+                    {
+                        "name": "stepsizeSeconds",
+                        "units": "s",
+                        "value": 60,
+                        "enableIf": null,
+                        "helpName": "Step Size",
+                        "disableIf": "isSingle",
+                        "helpMessage": "The step size in seconds.",
+                        "maximumValue": 300,
+                        "minimumValue": 30
+                    }
+                ],
+                "string": [],
+                "integer": [],
+                "dateandtime": [
+                    {
+                        "name": "start",
+                        "value": "2026-10-14T12:00:00.000Z",
+                        "enableIf": null,
+                        "helpName": "Start Time",
+                        "disableIf": null,
+                        "helpMessage": "The start time of the time interval."
+                    },
+                    {
+                        "name": "end",
+                        "value": "2026-10-15T12:00:00.000Z",
+                        "enableIf": null,
+                        "helpName": "End Time",
+                        "disableIf": "isSingle",
+                        "helpMessage": "The end time of the time interval."
+                    }
+                ]
+            },
+            "blockId": "197616df-54a2-422c-906e-b495d75d11ec",
+            "position": {
+                "x": -13.378883979521987,
+                "y": 129.64219773491354
+            }
+        }
+    ]
+}
