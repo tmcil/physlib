@@ -54,6 +54,11 @@ def test_run_block(
         logger.error("Failed to capture process output")
         raise RuntimeError("Failed to capture process output")
 
+    for line in process.stdout:
+        message = line.rstrip("\r\n")
+        if message:
+            logger.info(message)
+
     return_code = process.wait()
 
     if return_code == 1:  # Error

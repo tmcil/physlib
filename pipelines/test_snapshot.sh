@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export WORKING_DIR=tests/snapshot/output
+
 for dir in tests/snapshot/reference/*/; do
     uuid=$(basename "$dir")
     echo "Running executor test for $uuid"
