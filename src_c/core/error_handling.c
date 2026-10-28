@@ -206,7 +206,7 @@ err_t construct_debug_message(char *constructed, const size_t len_constructed,
     }
 
     // Allocate the constructed string with the data filled in.
-    stat = snprintf(constructed, len_constructed, "%s %s [%s ln%d] %s\n",
+    stat = snprintf(constructed, len_constructed, "%s %s (__C) [%s ln%d] %s\n",
                     timestamp, status_str, filename, line, formatted_msg);
     if (stat < 0) return ERR("Failed to construct message");
     if ((size_t)stat >= len_constructed) return WAR("Message was truncated");

@@ -35,7 +35,7 @@ bool vector_is_allocated(const vector_t *vec);
 
 /* ------------------------------------------------------------------------- */
 
-err_t vector_print(char *msg, const int msg_len, const vector_t vec);
+err_t vector_print(const vector_t vec);
 
 /* ------------------------------------------------------------------------- */
 

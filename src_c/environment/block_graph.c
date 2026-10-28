@@ -154,10 +154,10 @@ err_t graph_find_input_port_file(cJSON **j_target, const uuid_t this_block_id,
     // Local variables
     err_t err = NO_ERROR;                 //     Error code
     char output_file_buf[512];            //     Buffer to hold name of file
-    graph_block_t this_block = {0};       // MEM The current block
-    graph_port_t this_port = {0};         // MEM Port of the current block
-    graph_connection_t connection = {0};  // MEM Input connection
-    graph_block_t target_block = {0};     // MEM Target block
+    graph_block_t this_block = {0};       //     The current block
+    graph_port_t this_port = {0};         //     Port of the current block
+    graph_connection_t connection = {0};  //     Input connection
+    graph_block_t target_block = {0};     //     Target block
     cJSON *j_output_target = NULL;        // MEM Output JSON tree
     output_block_t output_target = {0};   // MEM Output block data
     size_t i = 0;
@@ -203,10 +203,6 @@ err_t graph_find_input_port_file(cJSON **j_target, const uuid_t this_block_id,
     }
     if (!found) return ERR("Could not find requested port in output of connected program");
 
-    graph_block_reset(&this_block);
-    graph_port_reset(&this_port);
-    graph_conn_reset(&connection);
-    graph_block_reset(&target_block);
     cJSON_Delete(j_output_target);
     output_block_reset(&output_target);
 

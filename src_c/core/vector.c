@@ -57,31 +57,36 @@ bool vector_is_allocated(const vector_t *vec) {
 
 /* ------------------------------------------------------------------------- */
 
-err_t vector_print(char *msg, const int msg_len, const vector_t vec) {
+err_t vector_print(const vector_t vec) {
     // Local variables
-    int offset = 0;   //     Location in msg buffer to write
-    int written = 0;  //     Number of characters written to msg buffer
+    int offset = 0;          //     Location in output buffer to write
+    int written = 0;         //     Number of characters written to output buffer
+    const int msg_len = 512;
+    char msg_buf[msg_len];
 
-    if (msg == NULL || msg_len <= 0) return ERR("Output buffer is invalid");
     if (!vector_is_allocated(&vec)) return ERR("Vector is not allocated");
 
-    written = snprintf(msg + offset, msg_len - offset, "vector_t (len=%d): [", (int)vec.dims);
+    written = snprintf(msg_buf + offset, msg_len - offset,
+                       "vector_t (len=%d): [", (int)vec.dims);
     if (written < 0 || written >= msg_len - offset) return ERR("Formatted vector exceeds output buffer");
     offset += written;
 
     for (size_t i = 0; i < vec.dims; i++) {
         const char *sep = (i == 0) ? " " : ", ";
 
-        written = snprintf(msg + offset, msg_len - offset, "%s%.3f", sep, vec.values[i]);
+        written = snprintf(msg_buf + offset, msg_len - offset,
+                           "%s%.3f", sep, vec.values[i]);
         if (written < 0 || written >= msg_len - offset) return ERR("Formatted vector exceeds output buffer");
         offset += written;
     }
 
-    written = snprintf(msg + offset, msg_len - offset, " ]");
+    written = snprintf(msg_buf + offset, msg_len - offset, " ]");
     if (written < 0 || written >= msg_len - offset) return ERR("Formatted vector exceeds output buffer");
     offset += written;
 
     if (offset > msg_len) return ERR("Formatted vector exceeds output buffer");
+
+    MSG(msg_buf);
 
     return NO_ERROR;
 }

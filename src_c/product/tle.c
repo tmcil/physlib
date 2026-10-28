@@ -24,8 +24,6 @@ err_t tle_read_json(tle_t *item, const cJSON *json) {
     strncpy(item->line_2, aux->valuestring, sizeof(item->line_2) - 1);
     item->line_2[sizeof(item->line_2) - 1] = '\0';
 
-    cJSON_Delete(aux);
-
     return NO_ERROR;
 }
 

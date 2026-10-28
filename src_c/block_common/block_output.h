@@ -47,7 +47,7 @@ err_t output_block_init(output_block_t *item);
 
 /* ------------------------------------------------------------------------- */
 
-err_t output_block_copy(output_block_t *dst, const output_block_t src);
+err_t output_block_copy(output_block_t *dst, const output_block_t *src);
 
 /* ------------------------------------------------------------------------- */
 

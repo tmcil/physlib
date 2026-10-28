@@ -174,8 +174,9 @@ err_t output_block_init(output_block_t *item) {
                 copy.n_ports++;
             }
 
-            output_block_reset(item);
-            output_block_copy(item, copy);
+            err = output_block_copy(item, &copy);
+            output_block_reset(&copy);
+            if (err) return ERR("Failed to copy output block");
         
             return NO_ERROR;
         }
@@ -188,17 +189,63 @@ err_t output_block_init(output_block_t *item) {
 
 /* ------------------------------------------------------------------------- */
 
-err_t output_block_copy(output_block_t *dst, const output_block_t src) {
-    if (dst == NULL) return ERR("Destination is NULL");
-    if (dst == &src) return ERR("Source and destination are aliased");
-    output_block_reset(dst);
+err_t output_block_copy(output_block_t *dst, const output_block_t *src) {
+    // Local variables
+    err_t err = NO_ERROR;       //     Error code
+    output_block_t copy = {0};  //     Auxiliary block, dst points here
 
-    if (output_block_init(dst)) return ERR("Failed too initialise destination");
-    dst->block = strdup(src.block);
-    dst->block_id.val = strdup(src.block_id.val);
-    dst->n_ports = src.n_ports;
-    memcpy(dst->ports, src.ports, src.n_ports * sizeof(output_port_t));
-    return  NO_ERROR;
+    if (dst == NULL) return ERR("Destination output block is null");
+    if (src == NULL) return ERR("Source output block is null");
+    if (dst == src) return NO_ERROR;
+    if (src->block == NULL || src->block_id.val == NULL) {
+        return ERR("Source output block is incomplete");
+    }
+    if (src->n_ports > 0 && src->ports == NULL) {
+        return ERR("Source output ports are missing");
+    }
+
+    copy.block = strdup(src->block);
+    if (copy.block == NULL) return ERR("Failed to copy output block name");
+
+    err = uuid_set(&copy.block_id, src->block_id.val);
+    if (err) {
+        output_block_reset(&copy);
+        return ERR("Failed to copy output block ID");
+    }
+
+    if (src->n_ports > 0) {
+        copy.ports = calloc(src->n_ports, sizeof(output_port_t));
+        if (copy.ports == NULL) {
+            output_block_reset(&copy);
+            return ERR("Failed to allocate copied output ports");
+        }
+    }
+
+    for (size_t i = 0; i < src->n_ports; i++) {
+        copy.n_ports++;
+        if (src->ports[i].port_id == NULL) {
+            output_block_reset(&copy);
+            return ERR("Source output port ID is null");
+        }
+
+        copy.ports[i].port_id = strdup(src->ports[i].port_id);
+        if (copy.ports[i].port_id == NULL) {
+            output_block_reset(&copy);
+            return ERR("Failed to copy output port ID");
+        }
+
+        if (src->ports[i].filepath != NULL) {
+            copy.ports[i].filepath = strdup(src->ports[i].filepath);
+            if (copy.ports[i].filepath == NULL) {
+                output_block_reset(&copy);
+                return ERR("Failed to copy output file path");
+            }
+        }
+    }
+
+    output_block_reset(dst);
+    *dst = copy;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
