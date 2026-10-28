@@ -88,19 +88,19 @@ double delta_to_days(const epoch_delta_t delta);
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_from_delta(epoch_t *epo, const epoch_t ref, const epoch_delta_t delta);
+err_t epoch_from_delta(epoch_t *epo, const epoch_t ref, const epoch_delta_t delta);
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_copy(epoch_t *dst, const epoch_t src);
+err_t epoch_copy(epoch_t *dst, const epoch_t src);
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_now(epoch_t *epo);
+err_t epoch_now(epoch_t *epo);
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_switch_format(epoch_t *epo, epoch_format_t format);
+err_t epoch_switch_format(epoch_t *epo, epoch_format_t format);
 
 /* ------------------------------------------------------------------------- */
 
@@ -120,15 +120,15 @@ bool epoch_between(const epoch_t epo, const epoch_t lower, const epoch_t upper, 
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_from_iso8601(epoch_t *epo, const char *iso);
+err_t epoch_from_iso8601(epoch_t *epo, const char *iso);
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_to_iso8601(char *iso, size_t iso_len, const epoch_t epoch);
+err_t epoch_to_iso8601(char *iso, size_t iso_len, const epoch_t epoch);
 
 /* ------------------------------------------------------------------------- */
 
-int interval_init(interval_t *interval, const size_t capacity);
+err_t interval_init(interval_t *interval, const size_t capacity);
 
 /* ------------------------------------------------------------------------- */
 
@@ -140,12 +140,12 @@ void interval_free(interval_t *interval);
 
 /* ------------------------------------------------------------------------- */
 
-int interval_push(interval_t *interval, const epoch_t epoch);
+err_t interval_push(interval_t *interval, const epoch_t epoch);
 
 /* ------------------------------------------------------------------------- */
 
-int interval_linear(interval_t *interval, const epoch_t start, const epoch_t end,
-                    const epoch_delta_t stepsize);
+err_t interval_linear(interval_t *interval, const epoch_t start, const epoch_t end,
+                      const epoch_delta_t stepsize);
 
 /* ------------------------------------------------------------------------- */
 

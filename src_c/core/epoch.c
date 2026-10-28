@@ -103,26 +103,26 @@ double delta_to_days(const epoch_delta_t delta) {
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_from_delta(epoch_t *epo, const epoch_t ref, const epoch_delta_t delta) {
+err_t epoch_from_delta(epoch_t *epo, const epoch_t ref, const epoch_delta_t delta) {
     double days = delta_to_days(delta);
     epo->scale = ref.scale;
     epo->format = ref.format;
     epo->date1 = ref.date1;
     epo->date2 = ref.date2 + days;
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_copy(epoch_t *dst, const epoch_t src) {
-    if (dst == NULL) return 1;
+err_t epoch_copy(epoch_t *dst, const epoch_t src) {
+    if (dst == NULL) return ERR("Destination pointer is null");
     memcpy(dst, &src, sizeof(epoch_t));
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_now(epoch_t *epo) {
+err_t epoch_now(epoch_t *epo) {
     time_t now = time(NULL);
     struct tm current_time;
 
@@ -148,15 +148,15 @@ int epoch_now(epoch_t *epo) {
     );
 
     epoch_switch_format(epo, J2000);
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_switch_format(epoch_t *epo, epoch_format_t format) {
+err_t epoch_switch_format(epoch_t *epo, epoch_format_t format) {
     double rem = 0.0;
     double new1 = 0.0, new2 = 0.0;
-    if (epo->format == format) return 0;
+    if (epo->format == format) return NO_ERROR;
 
     // Must avoid computing (epo->date1 + epo->date2) to avoid precision loss
     switch (format) {
@@ -172,7 +172,7 @@ int epoch_switch_format(epoch_t *epo, epoch_format_t format) {
             new1 = epo->date1 + epo->date2;
             break;
         default:
-            return 1;
+            return ERR("Unsupported epoch date format");
     }
 
     rem = epo->date1 - new1;
@@ -181,7 +181,7 @@ int epoch_switch_format(epoch_t *epo, epoch_format_t format) {
     epo->format = format;
     epo->date1 = new1;
     epo->date2 = new2;
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -234,13 +234,13 @@ bool epoch_between(const epoch_t epo, const epoch_t lower, const epoch_t upper, 
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_from_iso8601(epoch_t *epo, const char *iso) {
+err_t epoch_from_iso8601(epoch_t *epo, const char *iso) {
     int iso_len = 0;
     int year, month, day, hour, minute;
     double second;
 
 
-    if (iso==NULL) return 1;
+    if (iso==NULL) return ERR("ISO string pointer is null");
 
     iso_len = (int)strlen(iso);
     if (iso_len == 23) {
@@ -248,13 +248,13 @@ int epoch_from_iso8601(epoch_t *epo, const char *iso) {
     } else if (iso_len == 24) {
         epo->scale = UTC;
     } else {
-        return 1;
+        return ERR("ISO string has invalid length");
     }
 
     // Check seperators
     if (iso[4] != '-' || iso[7] != '-' || iso[10] != 'T' || iso[13] != ':' ||
         iso[16] != ':') {
-        return 1;
+        return ERR("ISO date separators are invalid");
     }
 
     // Parse date
@@ -272,15 +272,15 @@ int epoch_from_iso8601(epoch_t *epo, const char *iso) {
         hour < 0 || hour > 23 ||
         minute < 0 || minute > 59 ||
         second < 0 || second > 61.0) {
-        return 1;
+        return ERR("ISO date fields are out of range");
     }
 
     if (year < 1900 || year > 2100) {
-        return 1;
+        return ERR("ISO year is out of range");
     }
 
     // Convert to julian date
-    if (epoch_switch_format(epo, JD)) return 1;
+    if (epoch_switch_format(epo, JD)) return ERR("Failed to convert epoch to Julian date");
     epo->date2 = 0.0;
     epo->date1 = (
         367 * year - (int)(7*(year + 
@@ -289,14 +289,14 @@ int epoch_from_iso8601(epoch_t *epo, const char *iso) {
         ((second/60 + minute)/60 + hour)/24
     );
 
-    if (epoch_switch_format(epo, J2000)) return 1;
+    if (epoch_switch_format(epo, J2000)) return ERR("Failed to convert epoch to J2000 format");
 
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
 
-int epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
+err_t epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
     int err = 0;
     epoch_t aux_epoch = epoch;
     int J, a, n, A, i, b, j, l;
@@ -304,14 +304,14 @@ int epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
     double second;
     double fracday, total_seconds;
 
-    if (iso == NULL) return 1;
-    if (iso_len < 25) return 1;
+    if (iso == NULL) return ERR("Output ISO buffer is null");
+    if (iso_len < 25) return ERR("Output ISO buffer is too small");
 
     err = epoch_switch_format(&aux_epoch, JD);
-    if (err) return 1;
+    if (err) return ERR("Failed to convert epoch format");
 
     if (aux_epoch.date1 <= 0.0) {
-        return 1;
+        return ERR("Julian date must be positive");
     }
 
     J = (int)floor(aux_epoch.date1 + 0.5);
@@ -345,11 +345,11 @@ int epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
         hour < 0 || hour > 23 ||
         minute < 0 || minute > 59 ||
         second < 0 || second > 61.0) {
-        return 1;
+        return ERR("ISO date fields are out of range");
     }
 
     if (year < 1900 || year > 2100) {
-        return 1;
+        return ERR("ISO year is out of range");
     }
 
     if (epoch.scale == UTC) {
@@ -360,29 +360,29 @@ int epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
                  year, month, day, hour, minute, second);
     }
 
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
 
-int interval_init(interval_t *interval, const size_t capacity) {
+err_t interval_init(interval_t *interval, const size_t capacity) {
     size_t i = 0;
-    if (interval == NULL) return 1;
-    if (capacity <= 0) return 1;
+    if (interval == NULL) return ERR("Interval pointer is null");
+    if (capacity <= 0) return ERR("Interval capacity must be positive");
     if (interval_is_allocated(interval)) interval_free(interval);
 
     interval->capacity = capacity;
     interval->epochs = malloc(capacity * sizeof(epoch_t));
     if (interval->epochs == NULL) {
         interval->capacity = 0;
-        return 1;
+        return ERR("Failed to allocate interval storage");
     }
     for (i = 0; i < capacity; i++) {
         epoch_zero(&interval->epochs[i]);
     }
 
     interval->n_epochs = 0;
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -405,32 +405,32 @@ void interval_free(interval_t *interval) {
 
 /* ------------------------------------------------------------------------- */
 
-int interval_push(interval_t *interval, const epoch_t epoch) {
+err_t interval_push(interval_t *interval, const epoch_t epoch) {
     epoch_t *aux = NULL;
     size_t new_capacity = interval->capacity;
-    if (!interval_is_allocated(interval)) return 1;
+    if (!interval_is_allocated(interval)) return ERR("Interval is not allocated");
 
     if (interval->n_epochs > 0) {
         // If adding to an existing list, check the epoch is after the previous
-        if (epoch_less(epoch, interval->epochs[interval->n_epochs-1])) return 1;
+        if (epoch_less(epoch, interval->epochs[interval->n_epochs-1])) return ERR("Epoch precedes last interval epoch");
     }
 
     if (interval->n_epochs >= interval->capacity) {
         new_capacity = (interval->capacity == 0) ? 1 : 2 * interval->capacity;
         aux = realloc(interval->epochs, new_capacity * sizeof(epoch_t));
-        if (aux == NULL) return 1;
+        if (aux == NULL) return ERR("Failed to realloc interval memory");
         interval->epochs = aux;
         interval->capacity = new_capacity;
     }
 
     interval->epochs[interval->n_epochs] = epoch;
     interval->n_epochs += 1;
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */
 
-int interval_linear(interval_t *interval, const epoch_t start, const epoch_t end,
+err_t interval_linear(interval_t *interval, const epoch_t start, const epoch_t end,
                     const epoch_delta_t stepsize) {
     size_t i = 0;
     size_t n_epochs = 0;
@@ -438,23 +438,23 @@ int interval_linear(interval_t *interval, const epoch_t start, const epoch_t end
     double stepsize_days = 0.0;
     epoch_t previous_epoch = {0};
 
-    if (epoch_iszerod(start)) return 1;
-    if (epoch_iszerod(end)) return 1;
-    if (stepsize.negative == true) return 1;
+    if (epoch_iszerod(start)) return ERR("Start time is zerod");
+    if (epoch_iszerod(end)) return ERR("End time is zerod");
+    if (stepsize.negative == true) return ERR("Negative stepsize");
     if (epoch_less(end, start) || epoch_equal(start, end, delta_millis(0.001))) {
         // In this case, return an interval with a single element == start
-        if (interval_init(interval, 1)) return 1;
-        if (interval_push(interval, start)) return 1;
-        return 0;
+        if (interval_init(interval, 1)) return ERR("Failed to init interval");
+        if (interval_push(interval, start)) return ERR("Failed to push epoch");
+        return NO_ERROR;
     }
 
     epoch_delta_t span = delta_from_epochs(start, end);
     span_days = delta_to_days(span);
     stepsize_days = delta_to_days(stepsize);
-    if (stepsize_days*86400*1000 <= 1) return 1;  // milliseconds check
+    if (stepsize_days*86400*1000 <= 1) return ERR("Stepsize too small");  // milliseconds check
     n_epochs = (size_t) ceil(span_days/stepsize_days + 1);
 
-    if (interval_init(interval, n_epochs)) return 1;
+    if (interval_init(interval, n_epochs)) return ERR("Failed to init interval");
     interval->epochs[0] = start;
     previous_epoch = start;
     for (i = 1; i < n_epochs; i++) {
@@ -468,7 +468,7 @@ int interval_linear(interval_t *interval, const epoch_t start, const epoch_t end
     
     interval->n_epochs = n_epochs;
 
-    return 0;
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */

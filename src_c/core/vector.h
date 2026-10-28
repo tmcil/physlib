@@ -19,11 +19,11 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
-int vector_init(vector_t *vec, const int dims);
+err_t vector_init(vector_t *vec, const int dims);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_copy(vector_t *dst, const vector_t src);
+err_t vector_copy(vector_t *dst, const vector_t src);
 
 /* ------------------------------------------------------------------------- */
 
@@ -35,7 +35,7 @@ bool vector_is_allocated(const vector_t *vec);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_print(char *msg, const int msg_len, const vector_t vec);
+err_t vector_print(char *msg, const int msg_len, const vector_t vec);
 
 /* ------------------------------------------------------------------------- */
 
@@ -43,39 +43,39 @@ double vector_get(const vector_t vec, const int index);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_set(vector_t *vec, const int index, const double value);
+err_t vector_set(vector_t *vec, const int index, const double value);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_fill(vector_t *vec, const double fill_with);
+err_t vector_fill(vector_t *vec, const double fill_with);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_scale(vector_t *vec, const double scale);
+err_t vector_scale(vector_t *vec, const double scale);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2);
+err_t vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t vec2);
+err_t vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t vec2);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_norm(double *norm, const vector_t vec);
+err_t vector_norm(double *norm, const vector_t vec);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_unit(vector_t *unit, const vector_t vec);
+err_t vector_unit(vector_t *unit, const vector_t vec);
 
 /* ------------------------------------------------------------------------- */
 
-int vector_dot(double *dot_product, const vector_t vec1, const vector_t vec2);
+err_t vector_dot(double *dot_product, const vector_t vec1, const vector_t vec2);
 
 /* ------------------------------------------------------------------------- */
 
-int vector3_cross(vector_t *cross, const vector_t vec1, const vector_t vec2);
+err_t vector3_cross(vector_t *cross, const vector_t vec1, const vector_t vec2);
 
 /* ------------------------------------------------------------------------- */
 

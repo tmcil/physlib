@@ -7,15 +7,15 @@
 
 /* ------------------------------------------------------------------------- */
 
-int vector_rotate(vector_t *rotated, const matrix_t rotmat, const vector_t vec);
+err_t vector_rotate(vector_t *rotated, const matrix_t rotmat, const vector_t vec);
 
 /* ------------------------------------------------------------------------- */
 
-int matrix_eigvec(const int dims, vector_t *eigenvectors, const matrix_t mat);
+err_t matrix_eigvec(const int dims, vector_t *eigenvectors, const matrix_t mat);
 
 /* ------------------------------------------------------------------------- */
 
-int matrix_eigval(const int dims, double *eigenvalues, const matrix_t mat);
+err_t matrix_eigval(const int dims, double *eigenvalues, const matrix_t mat);
 
 /* ------------------------------------------------------------------------- */
 

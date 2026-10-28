@@ -27,7 +27,7 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
-int cartsv_init(cartsv_t *sv, const int dims, const orbit_frame_t frame);
+err_t cartsv_init(cartsv_t *sv, const int dims, const orbit_frame_t frame);
 
 /* ------------------------------------------------------------------------- */
 
@@ -35,12 +35,12 @@ void cartsv_free(cartsv_t *sv);
 
 /* ------------------------------------------------------------------------- */
 
-int cartsv_rotate(cartsv_t *out, const orbit_frame_t out_frame,
+err_t cartsv_rotate(cartsv_t *out, const orbit_frame_t out_frame,
                   const cartsv_t in, const orbit_frame_t in_frame);
 
 /* ------------------------------------------------------------------------- */
 
-int cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity);
+err_t cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity);
 
 /* ------------------------------------------------------------------------- */
 
@@ -52,7 +52,7 @@ void cartsv_array_free(cartsv_array_t *trajectory);
 
 /* ------------------------------------------------------------------------- */
 
-int cartsv_array_push(cartsv_array_t *trajectory, const cartsv_t statevector);
+err_t cartsv_array_push(cartsv_array_t *trajectory, const cartsv_t statevector);
 
 /* ------------------------------------------------------------------------- */
 #endif
