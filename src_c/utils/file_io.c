@@ -7,7 +7,7 @@
 err_t read_json(cJSON **json, const char *filename) {
 
     // Read the JSON file
-    char *json_string = read_file(filename);
+    char *json_string = read_file(filename);  // MEM JSON file contents
     if (!json_string) {
         return ERR("Error reading file: %s", filename);
     }
@@ -27,7 +27,7 @@ err_t read_json(cJSON **json, const char *filename) {
 // ----------------------------------------------------------------------------
 err_t write_json(const cJSON *json, const char *filepath) {
 
-    char *json_string = cJSON_Print(json);
+    char *json_string = cJSON_Print(json);  // MEM Printed JSON string
 
     if (json_string == NULL) {
         return ERR("Failed generate JSON string for %s", filepath);
@@ -70,7 +70,7 @@ char *read_file(const char *filename) {
 
     rewind(fp);
 
-    char *buffer = malloc((size_t)size + 1);
+    char *buffer = malloc((size_t)size + 1); // MEM File contents
     if (buffer == NULL) {
         fclose(fp);
         return NULL;

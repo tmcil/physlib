@@ -1,20 +1,20 @@
+
 #include "block_output.h"
 
-// Module Variables -----------------------------------------------------------
 
+/* ------------------------------------------------------------------------- */
 
-// ----------------------------------------------------------------------------
 err_t output_block_read_json(output_block_t *item, const cJSON *json) {
     // Local variables
-    err_t err = NO_ERROR;
-    cJSON *block = NULL;
-    cJSON *blockId = NULL;
-    cJSON *ports = NULL;
-    cJSON *ports_el = NULL;
-    size_t n_ports = 0;
-    cJSON *portId = NULL;
-    cJSON *file = NULL;
-    size_t i = 0;
+    err_t err = NO_ERROR;    //     Status code
+    size_t n_ports = 0;      //     Number of ports present in the output block
+    size_t i = 0;            //     Iterator
+    cJSON *block = NULL;     //     Block JSON object
+    cJSON *blockId = NULL;   //     Block ID JSON object
+    cJSON *ports = NULL;     //     Ports array JSON object
+    cJSON *ports_el = NULL;  //     Ports array[i] JSON object
+    cJSON *portId = NULL;    //     Ports array[i] ID JSON object
+    cJSON *file = NULL;      //     Ports array[i] file JSON object
 
     block = cJSON_GetObjectItemCaseSensitive(json, "block");
     if (!cJSON_IsString(block)) return ERR("Failed to read JSON: block");
@@ -51,13 +51,14 @@ err_t output_block_read_json(output_block_t *item, const cJSON *json) {
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t output_block_create_json(cJSON **json, const output_block_t *item) {
     // Local variables
-    cJSON *aux = NULL;
-    cJSON *aux_array = NULL;
-    cJSON *aux_array_el = NULL;
-    size_t i = 0;
+    cJSON *aux = NULL;           //     JSON value
+    cJSON *aux_array = NULL;     //     Values array
+    cJSON *aux_array_el = NULL;  //     Values array element
+    size_t i = 0;                //     Iterator
 
     if (item == NULL) return ERR("Null item pointer passed to function");
 
@@ -99,10 +100,11 @@ err_t output_block_create_json(cJSON **json, const output_block_t *item) {
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t output_block_push(output_block_t *item, const char* port, const char* path) {
     // Local variables
-    size_t i = 0;
+    size_t i = 0;  //     Iterator
 
     if (item == NULL) return ERR("NULL item pointer passed to function");
     if (port == NULL) return ERR("NULL port pointer passed to function");
@@ -119,53 +121,111 @@ err_t output_block_push(output_block_t *item, const char* port, const char* path
     return ERR("Failed to find port [%s] in output block type");
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t output_block_init(output_block_t *item) {
     // Local variables
-    size_t i = 0, j = 0;
-    size_t n_output_ports = 0;
+    err_t err = NO_ERROR;       //     Error code
+    output_block_t copy = {0};  // MEM Block data being copied
+    size_t i = 0, j = 0;        //     Iterators
+    size_t n_output_ports = 0;  //     Number of output ports
 
+    if (item == NULL) return ERR("Output block pointer is null");
     if (graph_isreset(g_block_graph)) return ERR("Block graph is not set");
 
     for (i = 0; i < g_block_graph.n_blocks; i++) {
         if (uuid_eq(g_block_graph.blocks[i].block_id, g_cmdline_args.block_id)) {
-            item->block = g_block_graph.blocks[i].block;
-            item->block_id = g_block_graph.blocks[i].block_id;
+            const graph_block_t *source = &g_block_graph.blocks[i];
 
-            for (j = 0; j < g_block_graph.blocks[i].n_ports; j++) {
+            copy.block = strdup(source->block);
+            if (copy.block == NULL) return ERR("Failed to copy block name");
+
+            err = uuid_set(&copy.block_id, source->block_id.val);
+            if (err) {
+                output_block_reset(&copy);
+                return ERR("Failed to copy block ID");
+            }
+
+            for (j = 0; j < source->n_ports; j++) {
+                if (strcmp(source->ports[j].direction, "output") == 0) {
+                    n_output_ports++;
+                }
+            }
+
+            if (n_output_ports > 0) {
+                copy.ports = calloc(n_output_ports, sizeof(output_port_t));
+                if (copy.ports == NULL) {
+                    output_block_reset(&copy);
+                    return ERR("Failed to allocate output ports");
+                }
+            }
+
+            for (j = 0; j < source->n_ports; j++) {
                 // skip non-output ports
-                if (strcmp(g_block_graph.blocks[i].ports[j].direction, "output") != 0) {
+                if (strcmp(source->ports[j].direction, "output") != 0) {
                     continue;
                 }
 
-                n_output_ports++;
-                item->ports = realloc(item->ports, n_output_ports * sizeof(output_port_t));
-                item->ports[n_output_ports-1].filepath = NULL;
-                item->ports[n_output_ports-1].port_id = g_block_graph.blocks[i].ports[j].port_id;
+                copy.ports[copy.n_ports].port_id = strdup(source->ports[j].port_id);
+                if (copy.ports[copy.n_ports].port_id == NULL) {
+                    output_block_reset(&copy);
+                    return ERR("Failed to copy output port ID");
+                }
+                copy.n_ports++;
             }
-            item->n_ports = n_output_ports;
+
+            output_block_reset(item);
+            output_block_copy(item, copy);
         
             return NO_ERROR;
         }
     }
 
+    output_block_reset(&copy);
+
     return ERR("Could not find this block in the block graph JSON");
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
+err_t output_block_copy(output_block_t *dst, const output_block_t src) {
+    if (dst == NULL) return ERR("Destination is NULL");
+    if (dst == &src) return ERR("Source and destination are aliased");
+    output_block_reset(dst);
+
+    if (output_block_init(dst)) return ERR("Failed too initialise destination");
+    dst->block = strdup(src.block);
+    dst->block_id.val = strdup(src.block_id.val);
+    dst->n_ports = src.n_ports;
+    memcpy(dst->ports, src.ports, src.n_ports * sizeof(output_port_t));
+    return  NO_ERROR;
+}
+
+/* ------------------------------------------------------------------------- */
+
 void output_block_reset(output_block_t *item) {
+    if (item == NULL) return;
     if (item->block != NULL) free(item->block);
+    item->block = NULL;
     uuid_reset(&item->block_id);
     for (size_t i = 0; i < item->n_ports; i++) {
         output_port_reset(&item->ports[i]);
     }
+    free(item->ports);
+    item->ports = NULL;
     item->n_ports = 0;
     return;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 void output_port_reset(output_port_t *item) {
+    if (item == NULL) return;
     if (item->port_id != NULL) free(item->port_id);
     if (item->filepath != NULL) free(item->filepath);
+    item->port_id = NULL;
+    item->filepath = NULL;
     return;
 }
+
+/* ------------------------------------------------------------------------- */

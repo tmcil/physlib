@@ -23,9 +23,11 @@ err_t matrix_init(matrix_t *mat, const int rows, const int cols) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix_init_identity(matrix_t *mat, const int dims) {
-    int status = 0;
-    int i = 0;
-    int j = 0;
+    // Local variables
+    int status = 0;  //     Status code
+    int i = 0;       //     Iterator
+    int j = 0;       //     Iterator
+
     if (matrix_init(mat, dims, dims) != 0) return ERR("Failed to initialize identity matrix");
     for (i = 0; i < dims; i++) {
         for (j = 0; j < dims; j++) {
@@ -86,8 +88,9 @@ bool matrix_is_square(const matrix_t mat) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix_print(char *msg, const int msg_len, const matrix_t mat) {
-    int offset = 0;
-    int written = 0;
+    // Local variables
+    int offset = 0;   //     Point in the msg buffer to write to
+    int written = 0;  //     Number of characters written to the msg buffer
 
     if (msg == NULL || msg_len <= 0) return ERR("Output buffer is invalid");
     if (!matrix_is_allocated(&mat)) return ERR("Matrix is not allocated");
@@ -144,8 +147,10 @@ err_t matrix_set(matrix_t *mat, const int row, const int col, const double value
 /* ------------------------------------------------------------------------- */
 
 err_t matrix_fill(matrix_t *mat, const double fill_with) {
-    size_t i = 0;
-    size_t j = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+    size_t j = 0;  //     Iterator
+
     if (!matrix_is_allocated(mat)) return ERR("Matrix is not allocated");
     for (i = 0; i < mat->rows; i++) {
         for (j = 0; j < mat->cols; j++) {
@@ -158,8 +163,10 @@ err_t matrix_fill(matrix_t *mat, const double fill_with) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix_scale(matrix_t *mat, const double scale) {
-    size_t i = 0;
-    size_t j = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+    size_t j = 0;  //     Iterator
+
     if (!matrix_is_allocated(mat)) return ERR("Matrix is not allocated");
     for (i = 0; i < mat->rows; i++) {
         for (j = 0; j < mat->cols; j++) {
@@ -172,9 +179,11 @@ err_t matrix_scale(matrix_t *mat, const double scale) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix_add(matrix_t *sum, const matrix_t mat1, const matrix_t mat2) {
-    int status = 0;
-    size_t i = 0;
-    size_t j = 0;
+    // Local variables
+    int status = 0;  //     Error code
+    size_t i = 0;    //     Iterator
+    size_t j = 0;    //     Iterator
+
     if (!matrix_is_allocated(&mat1)) return ERR("First matrix is not allocated");
     if (!matrix_is_allocated(&mat2)) return ERR("Second matrix is not allocated");
     if (mat1.rows != mat2.rows || mat1.cols != mat2.cols) return ERR("Matrix dimensions do not match");
@@ -196,9 +205,11 @@ err_t matrix_add(matrix_t *sum, const matrix_t mat1, const matrix_t mat2) {
 /* ------------------------------------------------------------------------- */
 
 err_t matris_sub(matrix_t *mat1_minus_mat2, const matrix_t mat1, const matrix_t mat2) {
-    int status = 0;
-    size_t i = 0;
-    size_t j = 0;
+    // Local variables
+    int status = 0;  //     Error code
+    size_t i = 0;    //     Iterator
+    size_t j = 0;    //     Iterator
+
     if (!matrix_is_allocated(&mat1)) return ERR("First matrix is not allocated");
     if (!matrix_is_allocated(&mat2)) return ERR("Second matrix is not allocated");
     if (mat1.rows != mat2.rows || mat1.cols != mat2.cols) return ERR("Matrix dimensions do not match");
@@ -220,9 +231,11 @@ err_t matris_sub(matrix_t *mat1_minus_mat2, const matrix_t mat1, const matrix_t 
 /* ------------------------------------------------------------------------- */
 
 err_t matrix_transpose(matrix_t *mat_T, const matrix_t mat) {
-    int status = 0;
-    size_t i = 0;
-    size_t j = 0;
+    // Local variables
+    int status = 0;  //     Error code
+    size_t i = 0;    //     Iterator
+    size_t j = 0;    //     Iterator
+
     if (!matrix_is_allocated(&mat)) return ERR("Matrix is not allocated");
 
     if (matrix_init(mat_T, mat.cols, mat.rows)) return ERR("Failed to initialize transposed matrix");
@@ -242,7 +255,9 @@ err_t matrix_transpose(matrix_t *mat_T, const matrix_t mat) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix2_mul(matrix_t *axb, const matrix_t a, const matrix_t b) {
-    int status = 0;
+    // Local variables
+    int status = 0;  //     Error code
+
     if (!matrix_is_allocated(&a)) return ERR("First matrix is not allocated");
     if (!matrix_is_allocated(&b)) return ERR("Second matrix is not allocated");
     if (a.cols != 2 || b.cols != 2 || a.rows != 2 || b.rows != 2) return ERR("Matrices must be 2x2");
@@ -265,7 +280,9 @@ err_t matrix2_mul(matrix_t *axb, const matrix_t a, const matrix_t b) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix3_mul(matrix_t *axb, const matrix_t a, const matrix_t b) {
-    int status = 0;
+    // Local variables
+    int status = 0;  //     Error code
+
     if (!matrix_is_allocated(&a)) return ERR("First matrix is not allocated");
     if (!matrix_is_allocated(&b)) return ERR("Second matrix is not allocated");
     if (a.cols != 3 || b.cols != 3 || a.rows != 3 || b.rows != 3) return ERR("Matrices must be 3x3");
@@ -294,9 +311,13 @@ err_t matrix3_mul(matrix_t *axb, const matrix_t a, const matrix_t b) {
 /* ------------------------------------------------------------------------- */
 
 err_t matrix3_mulmul(matrix_t *axbxc, const matrix_t a, const matrix_t b, const matrix_t c) {
-    matrix_t bxc = {0};
+    // Local variables
+    matrix_t bxc = {0};  // MEM Intermediate matrix
+
     if (matrix3_mul(&bxc, b, c)) return ERR("Failed to multiply second and third matrices");
     if (matrix3_mul(axbxc, a, bxc)) return ERR("Failed to multiply first and product matrices");
+
+    matrix_free(&bxc);
     return NO_ERROR;
 }
 
@@ -319,9 +340,11 @@ err_t matrix3_inv(matrix_t *inverse, const matrix_t mat);
 /* ------------------------------------------------------------------------- */
 
 bool matrix_equal(const matrix_t mat1, const matrix_t mat2, const double tolerance) {
-    bool equal = true;
-    size_t i = 0;
-    size_t j = 0;
+    // Local variables
+    bool equal = true;  //     True if equal
+    size_t i = 0;       //     Iterator
+    size_t j = 0;       //     Iterator
+
     if (mat1.rows != mat2.rows || mat1.cols != mat2.cols) return false;
     if (!matrix_is_allocated(&mat1) || !matrix_is_allocated(&mat2)) return false;
 

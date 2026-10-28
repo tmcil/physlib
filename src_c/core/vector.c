@@ -5,7 +5,9 @@
 /* ------------------------------------------------------------------------- */
 
 err_t vector_init(vector_t *vec, const int dims) {
-    int i = 0;
+    // Local variables
+    int i = 0;  //     Iterator
+
     if (vec == NULL) return ERR("Vector pointer is null");
     if (dims <= 0) return ERR("Vector dimensions must be positive");
     if (vector_is_allocated(vec)) vector_free(vec);
@@ -56,8 +58,10 @@ bool vector_is_allocated(const vector_t *vec) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_print(char *msg, const int msg_len, const vector_t vec) {
-    int offset = 0;
-    int written = 0;
+    // Local variables
+    int offset = 0;   //     Location in msg buffer to write
+    int written = 0;  //     Number of characters written to msg buffer
+
     if (msg == NULL || msg_len <= 0) return ERR("Output buffer is invalid");
     if (!vector_is_allocated(&vec)) return ERR("Vector is not allocated");
 
@@ -101,7 +105,9 @@ err_t vector_set(vector_t *vec, const int index, const double value) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_fill(vector_t *vec, const double fill_with) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (!vector_is_allocated(vec)) return ERR("Vector is not allocated");
     for (i = 0; i < vec->dims; i++) {
         vec->values[i] = fill_with;
@@ -112,7 +118,9 @@ err_t vector_fill(vector_t *vec, const double fill_with) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_scale(vector_t *vec, const double scale) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (!vector_is_allocated(vec)) return ERR("Vector is not allocated");
     for (i = 0; i < vec->dims; i++) {
         vec->values[i] *= scale;
@@ -123,7 +131,9 @@ err_t vector_scale(vector_t *vec, const double scale) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (!vector_is_allocated(&vec1)) return ERR("First vector is not allocated");
     if (!vector_is_allocated(&vec2)) return ERR("Second vector is not allocated");
     if (vec1.dims != vec2.dims) return ERR("Vector dimensions do not match");
@@ -138,7 +148,9 @@ err_t vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t vec2) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (!vector_is_allocated(&vec1)) return ERR("First vector is not allocated");
     if (!vector_is_allocated(&vec2)) return ERR("Second vector is not allocated");
     if (vec1.dims != vec2.dims) return ERR("Vector dimensions do not match");
@@ -153,8 +165,10 @@ err_t vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t 
 /* ------------------------------------------------------------------------- */
 
 err_t vector_norm(double *norm, const vector_t vec) {
-    size_t i = 0;
-    double sq_sum = 0.0;
+    // Local variables
+    size_t i = 0;         //     Iterator
+    double sq_sum = 0.0;  //     Sum of each element^2
+
     if (norm == NULL) return ERR("Norm output pointer is null");
     if (!vector_is_allocated(&vec)) return ERR("Vector is not allocated");
     for (i = 0; i < vec.dims; i++) {
@@ -167,8 +181,9 @@ err_t vector_norm(double *norm, const vector_t vec) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_unit(vector_t *unit, const vector_t vec) {
-    size_t i = 0;
-    double norm = 0.0;
+    // Local variables
+    size_t i = 0;       //     Iterator
+    double norm = 0.0;  //     Length of vec
     if (!vector_is_allocated(&vec)) return ERR("Vector is not allocated");
     if (unit == NULL) return ERR("Unit vector pointer is null");
 
@@ -184,7 +199,9 @@ err_t vector_unit(vector_t *unit, const vector_t vec) {
 /* ------------------------------------------------------------------------- */
 
 err_t vector_dot(double *dot_product, const vector_t vec1, const vector_t vec2) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (!vector_is_allocated(&vec1)) return ERR("First vector is not allocated");
     if (!vector_is_allocated(&vec2)) return ERR("Second vector is not allocated");
     if (dot_product == NULL) return ERR("Dot product output is null");
@@ -217,8 +234,10 @@ err_t vector3_cross(vector_t *cross, const vector_t vec1, const vector_t vec2) {
 /* ------------------------------------------------------------------------- */
 
 bool vector_equal(const vector_t vec1, const vector_t vec2, const double tolerance) {
-    bool equal = true;
-    size_t i = 0;
+    // Local variables
+    bool equal = true;  //     True if vectors are equal
+    size_t i = 0;       //     Iterator
+
     if (vec1.dims != vec2.dims) return false;
     if (!vector_is_allocated(&vec1) || !vector_is_allocated(&vec2)) return false;
 

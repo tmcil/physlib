@@ -53,7 +53,9 @@ err_t cartsv_copy(cartsv_t *dst, const cartsv_t src) {
 /* ------------------------------------------------------------------------- */
 
 err_t cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (trajectory == NULL) return ERR("array pointer is null");
     if (capacity <= 0) return ERR("array capacity must be positive");
     if (cartsv_array_is_allocated(trajectory)) cartsv_array_free(trajectory);
@@ -86,7 +88,9 @@ bool cartsv_array_is_allocated(const cartsv_array_t *trajectory) {
 /* ------------------------------------------------------------------------- */
 
 void cartsv_array_free(cartsv_array_t *trajectory) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (cartsv_array_is_allocated(trajectory)) {
         for (i = 0; i < trajectory->n_statevectors; i++) {
             vector_free(&trajectory->statevectors[i].r);
@@ -103,9 +107,11 @@ void cartsv_array_free(cartsv_array_t *trajectory) {
 /* ------------------------------------------------------------------------- */
 
 err_t cartsv_array_push(cartsv_array_t *trajectory, const cartsv_t statevector) {
-    err_t err = NO_ERROR;
-    cartsv_t *aux = NULL;
-    size_t new_capacity = 0;
+    // Local variables
+    err_t err = NO_ERROR;     //     Error code
+    cartsv_t *aux = NULL;     //     Pointer to reallocated trajectory array
+    size_t new_capacity = 0;  //     Capacity after reallocation
+
     if (!cartsv_array_is_allocated(trajectory)) return ERR("array is not allocated");
 
     if (trajectory->n_statevectors > 0) {

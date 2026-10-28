@@ -17,15 +17,19 @@
 
 #include "external/SGP4.h"
 #include "external/TLE.h"
+
+
+/* ------------------------------------------------------------------------- */
+
 err_t sgp4_eval(cartsv_t *teme_vec, const epoch_t epoch, const tle_t tle,
                 const wgs_model_t wgs) {
     // Local variables
-    err_t err = NO_ERROR;
-    TLE satrec = {0};
-    epoch_t satrec_epoch = {0};
-    double mins_since_epoch = 0.0f;
-    char line_1[70];
-    char line_2[70];
+    err_t err = NO_ERROR;            //     error code
+    TLE satrec = {0};                //     sgp4 satrec object
+    epoch_t satrec_epoch = {0};      //     satrev epoch in core/ format
+    double mins_since_epoch = 0.0f;  //     minutes since satrec epoch
+    char line_1[70];                 //     Line 1 of the TLE, copy of tle.line1
+    char line_2[70];                 //     Line 2 of the TLE, copy of tle.line2
 
     if (epoch_iszerod(epoch)) return ERR("Empty epoch passed to function");
     if (tle_isreset(&tle)) return ERR("Emtpy TLE passed to function");
@@ -63,22 +67,20 @@ err_t sgp4_eval(cartsv_t *teme_vec, const epoch_t epoch, const tle_t tle,
     return NO_ERROR;
 }
 
+/* ------------------------------------------------------------------------- */
+
 int main(int argc, char *argv[]) {
-    // Block inputs -----------------------------------------------------------
-    sgp4_config_t block_config = {0};
-    interval_t timespan        = {0};
-    tle_t tle                  = {0};
-    // Block outputs ----------------------------------------------------------
-    output_block_t outputs     = {0};
-    cartsv_array_t eph         = {0};
-    // Block variables --------------------------------------------------------
-    err_t err                  = NO_ERROR;
-    char *file_written_buf     = NULL;
-    size_t i                   = 0;
-    cartsv_t statevector       = {0};
-    // JSON objects -----------------------------------------------------------
-    cJSON *j_block_config = NULL, *j_outputs = NULL;
-    cJSON *j_tle = NULL, *j_epo = NULL, *j_eph = NULL;
+    err_t err                  = NO_ERROR;              //     Error code
+    sgp4_config_t block_config = {0};                   //     Block input config
+    interval_t timespan        = {0};                   // MEM Block input interval
+    tle_t tle                  = {0};                   //     Block input TLE
+    output_block_t outputs     = {0};                   // MEM Block output data
+    cartsv_array_t eph         = {0};                   // MEM CartSV array produced
+    char *file_written_buf     = NULL;                  // MEM Buffer which stores filenames written
+    size_t i                   = 0;                     //     Iterator
+    cartsv_t statevector       = {0};                   // MEM Statevector computed by SGP4
+    cJSON *j_block_config = NULL, *j_outputs = NULL;    // MEM block JSONs
+    cJSON *j_tle = NULL, *j_epo = NULL, *j_eph = NULL;  // MEM product JSONs
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
@@ -91,7 +93,6 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to read config JSON file");
     err = block_sgp4_config_read(&block_config, j_block_config);
     if (err) return ERR("Failed to load config object");
-    cJSON_Delete(j_block_config);
 
     // Read the TLE input
     err = graph_find_input_port_file(&j_tle, g_cmdline_args.block_id, "tle");
@@ -110,9 +111,6 @@ int main(int argc, char *argv[]) {
 
     err = cartsv_array_init(&eph, timespan.n_epochs);
     if (err) return ERR("Failed to inialise EPH product");
-
-    // Evaluate the TLE along EPO with SGP4_eval. Stored in EPH
-    // err = eph_init(&eph, 0, 0, 1000.0); // SGP4 outputs in km
 
     // TODO: Rotate this to actually be in J2000, currently in TEME
     statevector.frame = ORBIT_FRAME_J2000;
@@ -134,7 +132,6 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert product EPH to JSON");
     err = working_dir_write(&file_written_buf, FILES, j_eph);
     if (err) return ERR("Failed to write EPH JSON file");
-    cJSON_Delete(j_tle);
 
     // Initialise the output object
     err = output_block_init(&outputs);
@@ -148,12 +145,18 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert outputs to JSON");
     err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
     if (err) return ERR("Failed to write output file");
-    cJSON_Delete(j_outputs);
 
     // Free memory
     environment_done();
-    cartsv_array_free(&eph);
     interval_free(&timespan);
+    output_block_reset(&outputs);
+    cartsv_array_free(&eph);
+    if (file_written_buf != NULL) free(file_written_buf);
+    cartsv_free(&statevector);
+    cJSON_Delete(j_block_config);
+    cJSON_Delete(j_tle); cJSON_Delete(j_epo); cJSON_Delete(j_eph);
 
     return NO_ERROR;
 }
+
+/* ------------------------------------------------------------------------- */

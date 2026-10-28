@@ -6,11 +6,11 @@
 
 err_t eph_create_json(cJSON **json, const cartsv_array_t *item) {
     // Local variables
-    cJSON *aux = NULL;
-    cJSON *vec_array = NULL;
-    cJSON *vec_array_el = NULL;
-    char iso_buf[32];
-    size_t j = 0;
+    cJSON *aux = NULL;           //     Auxiliary JSON field storage
+    cJSON *vec_array = NULL;     //     Values array
+    cJSON *vec_array_el = NULL;  //     Values array[i]
+    char iso_buf[32];            //     Buffer for ISO8601 timestamp
+    size_t j = 0;                //     Iterator
 
     if (item == NULL) return ERR("Bad item pointer argument passed");
 
@@ -60,12 +60,12 @@ err_t eph_create_json(cJSON **json, const cartsv_array_t *item) {
 
 err_t eph_read_json(cartsv_array_t *item, const cJSON *json) {
     // Local variables
-    err_t err = NO_ERROR;
-    cJSON *aux = NULL;
-    cJSON *vec_array = NULL;
-    cJSON *vec_array_el = NULL;
-    int values_len = 0;
-    cartsv_t statevector = {0};
+    err_t err = NO_ERROR;        //     Error code
+    cJSON *aux = NULL;           //     Auxiliary JSON field storage
+    cJSON *vec_array = NULL;     //     Values array
+    cJSON *vec_array_el = NULL;  //     Values array[i]
+    int values_len = 0;          //     Length of values array
+    cartsv_t statevector = {0};  // MEM Statevector buffers
 
     if (json == NULL) return ERR("NULL cJSON argument passed");
 
@@ -78,11 +78,12 @@ err_t eph_read_json(cartsv_array_t *item, const cJSON *json) {
     err = cartsv_array_init(item, values_len);
     if (err) return ERR("Failed to initiliase trajectory from EPH");
 
+    statevector.frame = ORBIT_FRAME_J2000;
+    vector_init(&statevector.r, 3);
+    vector_init(&statevector.v, 3);
+    matrix_init(&statevector.cov, 6, 6);
+
     for (int i = 0; i < values_len; i++) {
-        statevector.frame = ORBIT_FRAME_J2000;
-        vector_init(&statevector.r, 3);
-        vector_init(&statevector.v, 3);
-        matrix_init(&statevector.cov, 6, 6);
 
         vec_array_el = cJSON_GetArrayItem(vec_array, i);
         if (!cJSON_IsObject(vec_array_el)) return ERR("Failed to read: values[%d]", i);
@@ -114,7 +115,7 @@ err_t eph_read_json(cartsv_array_t *item, const cJSON *json) {
         if (err) return ERR("Failed to push statevector to trajectory");
     }
 
-    cJSON_Delete(aux);
+    cartsv_free(&statevector);
 
     return NO_ERROR;
 }

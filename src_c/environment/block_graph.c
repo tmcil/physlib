@@ -1,18 +1,18 @@
-#include "block_graph.h"
 
-// Module Variables -----------------------------------------------------------
+#include "block_graph.h"
 
 graph_t g_block_graph = {0};
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_read_json(graph_t *graph, const cJSON *json) {
     // Local variables
-    err_t err = NO_ERROR;
-    graph_block_t block = {0};
-    cJSON *blockGraph = NULL;
-    cJSON *blockGraph_el = NULL;
-    size_t blockGraph_len = 0;
-    size_t i = 0;
+    err_t err = NO_ERROR;         //     Error code
+    graph_block_t block = {0};    // MEM Block data being read
+    cJSON *blockGraph = NULL;     //     BlockGraph list JSON object
+    cJSON *blockGraph_el = NULL;  //     BlockGraph list element object
+    size_t blockGraph_len = 0;    //     Lenght of the BlockGraph list
+    size_t i = 0;                 //     Iterator
 
     blockGraph = cJSON_GetObjectItemCaseSensitive(json, "blockGraph");
     if (!cJSON_IsArray(blockGraph)) return ERR("Failed to read: blockGraph");
@@ -26,23 +26,24 @@ err_t graph_read_json(graph_t *graph, const cJSON *json) {
         if (!cJSON_IsObject(blockGraph_el)) return ERR("Failed to read: blockGraph[%d]", i);
         err = graph_block_read_json(&block, blockGraph_el);
         if (err) return ERR("Failed to read: blockGraph[%d], i");
-        graph->blocks[i] = block;
+        graph->blocks[i] = block;  // TODO: deepcopy and free
     }
 
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_block_read_json(graph_block_t *block, const cJSON *json) {
     // Local variables
-    err_t err = NO_ERROR;
-    graph_port_t port = {0};
-    cJSON *blockName = NULL;
-    cJSON *blockId = NULL;
-    cJSON *ports = NULL;
-    cJSON *ports_el = NULL;
-    size_t ports_len = 0;
-    size_t i = 0;
+    err_t err = NO_ERROR;     //     Error code
+    graph_port_t port = {0};  // MEM Port data being read
+    cJSON *blockName = NULL;  //     Block Name JSON object
+    cJSON *blockId = NULL;    //     Block ID JSON object
+    cJSON *ports = NULL;      //     Ports array JSON object
+    cJSON *ports_el = NULL;   //     Ports[i] JSON object
+    size_t ports_len = 0;     //     Ports array length JSON object
+    size_t i = 0;             //     Iterator
 
     blockName = cJSON_GetObjectItemCaseSensitive(json, "block");
     if (!cJSON_IsString(blockName)) return ERR("Failed to read: block");
@@ -66,25 +67,27 @@ err_t graph_block_read_json(graph_block_t *block, const cJSON *json) {
         if (!cJSON_IsObject(ports_el)) return ERR("Failed to read: ports[%d]", i);
         err = graph_port_read_json(&port, ports_el);
         if (err) return ERR("Failed to read: ports[%d]", i);
-        block->ports[i] = port;
+        block->ports[i] = port;  // TODO: deepcopy and free
     }
 
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_port_read_json(graph_port_t *port, const cJSON *json) {
-    err_t err = NO_ERROR;
-    graph_connection_t connection = {0};
-    cJSON *portId = NULL;
-    cJSON *type = NULL;
-    cJSON *direction = NULL;
-    cJSON *optional = NULL;
-    cJSON *array = NULL;
-    cJSON *connections = NULL;
-    cJSON *connections_el = NULL;
-    size_t connections_len = 0;
-    size_t i = 0;
+    // Local variables
+    err_t err = NO_ERROR;                 //     Error code
+    graph_connection_t connection = {0};  // MEM Connection being read
+    cJSON *portId = NULL;                 //     Port ID
+    cJSON *type = NULL;                   //     Product type
+    cJSON *direction = NULL;              //     Port direction
+    cJSON *optional = NULL;               //     Port optional flag
+    cJSON *array = NULL;                  //     Port array flag
+    cJSON *connections = NULL;            //     Port connections array
+    cJSON *connections_el = NULL;         //     Port connections[i]
+    size_t connections_len = 0;           //     Port connections array length
+    size_t i = 0;                         //     Iterator
 
     portId = cJSON_GetObjectItemCaseSensitive(json, "portId");
     if (!cJSON_IsString(portId)) return ERR("Failed to read: portId");
@@ -118,18 +121,19 @@ err_t graph_port_read_json(graph_port_t *port, const cJSON *json) {
         if (!cJSON_IsObject(connections_el)) return ERR("Failed to read: connections[%d]", i);
         err = graph_conn_read_json(&connection, connections_el);
         if (err) return ERR("Failed to read: connections[%d]", i);
-        port->connections[i] = connection;
+        port->connections[i] = connection; // todo deepcopy and free
     }
 
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_conn_read_json(graph_connection_t *conn, const cJSON *json) {
     // Local variables
-    err_t err = NO_ERROR;
-    cJSON *blockId = NULL;
-    cJSON *portId = NULL;
+    err_t err = NO_ERROR;   //     Error code
+    cJSON *blockId = NULL;  //     Block ID
+    cJSON *portId = NULL;   //     Port ID
 
     blockId = cJSON_GetObjectItemCaseSensitive(json, "blockId");
     if (!cJSON_IsString(blockId)) return ERR("Failed to read: blockId");
@@ -143,18 +147,19 @@ err_t graph_conn_read_json(graph_connection_t *conn, const cJSON *json) {
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_find_input_port_file(cJSON **j_target, const uuid_t this_block_id,
                                  const char* port) {
     // Local variables
-    err_t err = NO_ERROR;
-    char output_file_buf[512];
-    graph_block_t this_block = {0};
-    graph_port_t this_port = {0};
-    graph_connection_t connection = {0};
-    graph_block_t target_block = {0};
-    cJSON *j_output_target = NULL;
-    output_block_t output_target = {0};
+    err_t err = NO_ERROR;                 //     Error code
+    char output_file_buf[512];            //     Buffer to hold name of file
+    graph_block_t this_block = {0};       // MEM The current block
+    graph_port_t this_port = {0};         // MEM Port of the current block
+    graph_connection_t connection = {0};  // MEM Input connection
+    graph_block_t target_block = {0};     // MEM Target block
+    cJSON *j_output_target = NULL;        // MEM Output JSON tree
+    output_block_t output_target = {0};   // MEM Output block data
     size_t i = 0;
     bool found = false;
     int stat = 0;
@@ -198,15 +203,23 @@ err_t graph_find_input_port_file(cJSON **j_target, const uuid_t this_block_id,
     }
     if (!found) return ERR("Could not find requested port in output of connected program");
 
+    graph_block_reset(&this_block);
+    graph_port_reset(&this_port);
+    graph_conn_reset(&connection);
+    graph_block_reset(&target_block);
+    cJSON_Delete(j_output_target);
+    output_block_reset(&output_target);
+
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_block_search_for_port(graph_port_t *port, const graph_block_t block,
                                   const char* port_id, const char* direction) {
     // Local variables
-    size_t i = 0;
-    bool found = false;
+    size_t i = 0;        //     Iterator
+    bool found = false;  //     True if port is found
 
     // Search this blocks ports for the requested one.
     for (i = 0; i < block.n_ports; i++) {
@@ -226,11 +239,12 @@ err_t graph_block_search_for_port(graph_port_t *port, const graph_block_t block,
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 err_t graph_search_for_block(graph_block_t *block, const uuid_t id) {
     // Local variables
-    size_t i = 0;
-    bool found = false;
+    size_t i = 0;        //     Iterator
+    bool found = false;  //     True of block is found
 
     // Search for this block in the block list.
     for (i = 0; i < g_block_graph.n_blocks; i++) {
@@ -247,12 +261,14 @@ err_t graph_search_for_block(graph_block_t *block, const uuid_t id) {
     return NO_ERROR;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 bool graph_isreset(const graph_t graph) {
     return (graph.blocks == NULL && graph.n_blocks == 0);
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 void graph_reset(graph_t *graph) {
     for (size_t i = 0; i<graph->n_blocks; i++) {
         graph_block_reset(&graph->blocks[i]);
@@ -261,7 +277,8 @@ void graph_reset(graph_t *graph) {
     return;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 void graph_block_reset(graph_block_t *graph_block) {
     if (graph_block->block != NULL) free(graph_block->block);
     uuid_reset(&graph_block->block_id);
@@ -272,7 +289,8 @@ void graph_block_reset(graph_block_t *graph_block) {
     return;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 void graph_port_reset(graph_port_t *graph_port) {
     if (graph_port->port_id != NULL) free(graph_port->port_id);
     if (graph_port->type != NULL) free(graph_port->type);
@@ -286,9 +304,12 @@ void graph_port_reset(graph_port_t *graph_port) {
     return;
 }
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
+
 void graph_conn_reset(graph_connection_t *graph_conn) {
     uuid_reset(&graph_conn->block_id);
     if (graph_conn->port_id != NULL) free(graph_conn->port_id);
     return;
 }
+
+/* ------------------------------------------------------------------------- */

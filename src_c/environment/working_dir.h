@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 
 #include "parse_cmdline.h"

@@ -1,12 +1,12 @@
+
 #include "block_input_tle_config.h"
 
-// Module Variables -----------------------------------------------------------
 
+/* ------------------------------------------------------------------------- */
 
-// ----------------------------------------------------------------------------
 err_t input_tle_config_read_json(input_tle_config_t *item, const cJSON *json) {
     // Local variables
-    cJSON *aux = NULL;
+    cJSON *aux = NULL; //     Input JSON field
 
     if (item == NULL) return ERR("Cannot read JSON to NULL pointer");
 
@@ -22,3 +22,5 @@ err_t input_tle_config_read_json(input_tle_config_t *item, const cJSON *json) {
 
     return NO_ERROR;
 }
+
+/* ------------------------------------------------------------------------- */

@@ -10,16 +10,17 @@
 #include "external/cJSON.h"
 #include "core/error_handling.h"
 
+
+/* ------------------------------------------------------------------------- */
+
 int main(int argc, char *argv[]) {
-    // Block inputs -----------------------------------------------------------
-    input_tle_config_t block_config = {0};
-    // Block outputs ----------------------------------------------------------
-    output_block_t outputs          = {0};
-    tle_t  tle                      = {0};
-    // Block variables --------------------------------------------------------
-    err_t err                       = NO_ERROR;
-    char *file_written_buf          = NULL;
-    cJSON *j_block_config = NULL, *j_outputs = NULL, *j_tle = NULL;
+    err_t err                       = NO_ERROR;       //     Error code
+    input_tle_config_t block_config = {0};            //     Block input config
+    output_block_t outputs          = {0};            // MEM Block output data
+    tle_t  tle                      = {0};            //     Block output TLE
+    char *file_written_buf          = NULL;           // MEM Buffer which stores filenames written
+    cJSON *j_block_config = NULL, *j_outputs = NULL;  // MEM Block JSONs
+    cJSON *j_tle = NULL;                              // MEM Product JSONs
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
@@ -29,7 +30,6 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to read input JSON file");
     err = input_tle_config_read_json(&block_config, j_block_config);
     if (err) return ERR("Input JSON file is malformed");
-    cJSON_Delete(j_block_config);
 
     // Fill the TLE type
     snprintf(tle.line_1, sizeof(tle.line_1), "%s", block_config.line_1);
@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert product TLE to JSON");
     err = working_dir_write(&file_written_buf, FILES, j_tle);
     if (err) return ERR("Failed to write TLE JSON file");
-    cJSON_Delete(j_tle);
 
     // Initialise the output object
     err = output_block_init(&outputs);
@@ -57,14 +56,17 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert outputs to JSON");
     err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
     if (err) return ERR("Failed to write output file");
-    cJSON_Delete(j_outputs);
 
     MSG("TLE successfully created");
 
     // Free memory
     environment_done();
-    tle_reset(&tle);
+    output_block_reset(&outputs);
     if (file_written_buf != NULL) free(file_written_buf);
+    cJSON_Delete(j_block_config); cJSON_Delete(j_outputs);
+    cJSON_Delete(j_tle);
 
     return NO_ERROR;
 }
+
+/* ------------------------------------------------------------------------- */

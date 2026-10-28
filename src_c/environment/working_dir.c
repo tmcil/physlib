@@ -14,8 +14,8 @@ static int m_n_files_written = 0;
 // ----------------------------------------------------------------------------
 err_t working_dir_set() {
     // Local variables
-    err_t err = NO_ERROR;
-    char path_buffer[512];
+    err_t err = NO_ERROR;   //     Error code
+    char path_buffer[512];  //     Buffer to hold paths
 
     // Initialise the root
     m_working_dir = getenv(ENV_WORKING_DIR);
@@ -66,13 +66,13 @@ err_t working_dir_join(char *path_to_set, size_t len_path_to_set,
                       const char* dir, const char* subdir,
                       const bool must_exist) {
     // Local variables
-    int i;
-    struct stat st;
+    int i;           //     Number of characters in filepath
+    struct stat st;  //     File stat object
 
     // Create the path
     i = snprintf(path_to_set, len_path_to_set, "%s/%s", dir, subdir);
     if (i < 0) return ERR("Failed to construct filepath: %s/%s", dir, subdir);
-    if ((size_t)i >= 512) return ERR("Filepath too long: %s/%s", dir, subdir);
+    if ((size_t)i >= len_path_to_set) return ERR("Filepath too long: %s/%s", dir, subdir);
 
     // Check the path exists
     if (!must_exist) return NO_ERROR;
@@ -87,10 +87,10 @@ err_t working_dir_join(char *path_to_set, size_t len_path_to_set,
 // ----------------------------------------------------------------------------
 err_t working_dir_read_input(cJSON **json) {
     // Local variables
-    err_t err = NO_ERROR;
-    int stat = 0;
-    char file_path[512];
-    char *short_uuid_buf = NULL;
+    err_t err = NO_ERROR;         //     Error code
+    int stat = 0;                 //     Status of snprintf call
+    char file_path[512];          //     File path buffer
+    char *short_uuid_buf = NULL;  // MEM Short UUID buffer
 
     short_uuid_buf = uuid_tostring_short(g_cmdline_args.block_id);
     if (short_uuid_buf == NULL) return ERR("Failed to retrieve UUID");
@@ -104,7 +104,7 @@ err_t working_dir_read_input(cJSON **json) {
     err = read_json(json, file_path);
     if (err) return ERR("Failed to read JSON contents");
 
-    free(short_uuid_buf);
+    if (short_uuid_buf != NULL) free(short_uuid_buf);
 
     return NO_ERROR;
 }
@@ -113,10 +113,10 @@ err_t working_dir_read_input(cJSON **json) {
 err_t working_dir_read(cJSON **json,
                        const working_dir_subdirs_t subdir, const char *path){
     // Local variables
-    err_t err = NO_ERROR;
-    int stat = 0;
-    char full_path[512];
-    char *dir = NULL;
+    err_t err = NO_ERROR;  //     Error code
+    int stat = 0;          //     Status of snprintf call
+    char full_path[512];   //     File path buffer
+    char *dir = NULL;      // MEM Directory name
 
     if (path == NULL) return ERR("path has not been set");
 
@@ -144,6 +144,8 @@ err_t working_dir_read(cJSON **json,
     err = read_json(json, full_path);
     if (err) return ERR("Failed to read JSON contents");
 
+    if (dir != NULL) free(dir);
+
     return NO_ERROR;
 }
 
@@ -151,9 +153,9 @@ err_t working_dir_read(cJSON **json,
 err_t working_dir_write(char **file_written,
                         const working_dir_subdirs_t subdir, const cJSON *json) {
     // Local variables
-    err_t err = NO_ERROR;
-    char path_buffer[512];
-    char *filename;
+    err_t err = NO_ERROR;   //     Error code
+    char path_buffer[512];  //     File path buffer
+    char *filename;         //     File name
 
     if (json == NULL) return ERR("Cannot write NULL JSON argument");
     if (g_working_dir_files == NULL) return ERR("Files directory not set");
@@ -182,9 +184,9 @@ err_t working_dir_file(char *file_path, size_t len_file_path,
                        const working_dir_subdirs_t subdir, const bool is_stdout,
                        const bool is_stderr) {
     // Local variables
-    int stat = 0;
-    char *directory = NULL;
-    char *short_uuid_buf = NULL;
+    int stat = 0;                 //     Status of snprintf call
+    char *directory = NULL;       //     Directory name
+    char *short_uuid_buf = NULL;  // MEM Short UUID buffer
 
     switch (subdir) {
         case INPUTS:

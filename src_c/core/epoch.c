@@ -22,11 +22,12 @@ bool epoch_iszerod(const epoch_t epo) {
 /* ------------------------------------------------------------------------- */
 
 epoch_delta_t delta_days(const double delta) {
-    bool negative = false;
-    double local_delta = 0.0;
-    double days = 0, hours = 0, minutes = 0, seconds = 0;
-    double fracday = 0.0, frachour = 0.0, fracmin = 0.0, fracsec = 0.0;
-    double millis = 0.0;
+    // Local variables
+    bool negative = false;                                               //     Delta is negative
+    double local_delta = 0.0;                                            //     Copy of input delta
+    double days = 0, hours = 0, minutes = 0, seconds = 0;                //     Time components
+    double fracday = 0.0, frachour = 0.0, fracmin = 0.0, fracsec = 0.0;  //     Fractional times
+    double millis = 0.0;                                                 //     Milliseconds of delta
 
     negative = delta < 0.0;
     local_delta = fabs(delta);
@@ -81,8 +82,9 @@ epoch_delta_t delta_millis(const double millis) {
 /* ------------------------------------------------------------------------- */
 
 epoch_delta_t delta_from_epochs(const epoch_t epo1, const epoch_t epo2) {
-    epoch_t aux1 = {0}, aux2 = {0};
-    double days = 0.0;
+    // Local variables
+    epoch_t aux1 = {0}, aux2 = {0};  //     Auxiliary epochs
+    double days = 0.0;               //     Total delta in days
 
     // Switch to j2000 and subtract second component, avoids precision loss
     epoch_copy(&aux1, epo1);
@@ -123,8 +125,9 @@ err_t epoch_copy(epoch_t *dst, const epoch_t src) {
 /* ------------------------------------------------------------------------- */
 
 err_t epoch_now(epoch_t *epo) {
-    time_t now = time(NULL);
-    struct tm current_time;
+    // Local variables
+    time_t now = time(NULL);  //     Current time (unix)
+    struct tm current_time;   //     Date-time object
 
     if (now == (time_t)-1 || gmtime_r(&now, &current_time) == NULL) {
         return -1;
@@ -154,8 +157,10 @@ err_t epoch_now(epoch_t *epo) {
 /* ------------------------------------------------------------------------- */
 
 err_t epoch_switch_format(epoch_t *epo, epoch_format_t format) {
-    double rem = 0.0;
-    double new1 = 0.0, new2 = 0.0;
+    // Local variables
+    double rem = 0.0;               //     Reminder w.r.t new1, to be added to new2
+    double new1 = 0.0, new2 = 0.0;  //     New date components
+
     if (epo->format == format) return NO_ERROR;
 
     // Must avoid computing (epo->date1 + epo->date2) to avoid precision loss
@@ -187,7 +192,9 @@ err_t epoch_switch_format(epoch_t *epo, epoch_format_t format) {
 /* ------------------------------------------------------------------------- */
 
 bool epoch_less(const epoch_t epo1, const epoch_t epo2) {
-    epoch_t aux1 = {0}, aux2 = {0};
+    // Local variables
+    epoch_t aux1 = {0}, aux2 = {0};  //     Auxiliary epochs
+
     epoch_copy(&aux1, epo1);
     epoch_copy(&aux2, epo2);
     epoch_switch_format(&aux1, J2000);
@@ -205,7 +212,9 @@ bool epoch_greater(const epoch_t epo1, const epoch_t epo2) {
 /* ------------------------------------------------------------------------- */
 
 bool epoch_equal(const epoch_t epo1, const epoch_t epo2, const epoch_delta_t tolerance) {
-    epoch_t aux1 = {0}, aux2 = {0};
+    // Local variables
+    epoch_t aux1 = {0}, aux2 = {0};  //     Auxiliary epochs
+
     epoch_copy(&aux1, epo1);
     epoch_copy(&aux2, epo2);
     epoch_switch_format(&aux1, J2000);
@@ -221,9 +230,11 @@ bool epoch_equal(const epoch_t epo1, const epoch_t epo2, const epoch_delta_t tol
 /*  |       lower                                             upper       |  */
 /*  |<--tol-->|-------------------------------------------------|<--tol-->|  */
 bool epoch_between(const epoch_t epo, const epoch_t lower, const epoch_t upper, const epoch_delta_t tolerance) {
-    epoch_t lower_bound = {0}, upper_bound = {0};
-    epoch_delta_t lower_tol = delta_days(-fabs(delta_to_days(tolerance)));
-    epoch_delta_t upper_tol = delta_days(fabs(delta_to_days(tolerance)));
+    // Local variables
+    epoch_t lower_bound = {0}, upper_bound = {0};                           //     Bounds to check
+    epoch_delta_t lower_tol = delta_days(-fabs(delta_to_days(tolerance)));  //     Lower tolerance
+    epoch_delta_t upper_tol = delta_days(fabs(delta_to_days(tolerance)));   //     Upper tolerance
+
     epoch_from_delta(&lower_bound, lower, lower_tol);
     epoch_from_delta(&upper_bound, upper, upper_tol);
 
@@ -235,9 +246,10 @@ bool epoch_between(const epoch_t epo, const epoch_t lower, const epoch_t upper, 
 /* ------------------------------------------------------------------------- */
 
 err_t epoch_from_iso8601(epoch_t *epo, const char *iso) {
-    int iso_len = 0;
-    int year, month, day, hour, minute;
-    double second;
+    // Local variables
+    int iso_len = 0;                     //     length of input iso string
+    int year, month, day, hour, minute;  //     Datetime elements
+    double second;                       //     Seconds
 
 
     if (iso==NULL) return ERR("ISO string pointer is null");
@@ -297,12 +309,13 @@ err_t epoch_from_iso8601(epoch_t *epo, const char *iso) {
 /* ------------------------------------------------------------------------- */
 
 err_t epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
-    int err = 0;
-    epoch_t aux_epoch = epoch;
-    int J, a, n, A, i, b, j, l;
-    int year, month, day, hour, minute;
-    double second;
-    double fracday, total_seconds;
+    // Local variables
+    int err = 0;                         //     Error code
+    epoch_t aux_epoch = epoch;           //     Auxiliary epoch, copy of input
+    int J, a, n, A, i, b, j, l;          //     Intermediate parameters for JD calc
+    int year, month, day, hour, minute;  //     Datetime elements
+    double second;                       //     Seconds
+    double fracday, total_seconds;       //     Fractional day elements
 
     if (iso == NULL) return ERR("Output ISO buffer is null");
     if (iso_len < 25) return ERR("Output ISO buffer is too small");
@@ -366,7 +379,9 @@ err_t epoch_to_iso8601(char* iso, size_t iso_len, const epoch_t epoch) {
 /* ------------------------------------------------------------------------- */
 
 err_t interval_init(interval_t *interval, const size_t capacity) {
-    size_t i = 0;
+    // Local variables
+    size_t i = 0;  //     Iterator
+
     if (interval == NULL) return ERR("Interval pointer is null");
     if (capacity <= 0) return ERR("Interval capacity must be positive");
     if (interval_is_allocated(interval)) interval_free(interval);
@@ -406,8 +421,10 @@ void interval_free(interval_t *interval) {
 /* ------------------------------------------------------------------------- */
 
 err_t interval_push(interval_t *interval, const epoch_t epoch) {
-    epoch_t *aux = NULL;
-    size_t new_capacity = interval->capacity;
+    // Local variables
+    epoch_t *aux = NULL;                       //     Pointer to interval after reallocation
+    size_t new_capacity = interval->capacity;  //     Capacity after reallocation
+
     if (!interval_is_allocated(interval)) return ERR("Interval is not allocated");
 
     if (interval->n_epochs > 0) {
@@ -432,11 +449,12 @@ err_t interval_push(interval_t *interval, const epoch_t epoch) {
 
 err_t interval_linear(interval_t *interval, const epoch_t start, const epoch_t end,
                     const epoch_delta_t stepsize) {
-    size_t i = 0;
-    size_t n_epochs = 0;
-    double span_days = 0.0;
-    double stepsize_days = 0.0;
-    epoch_t previous_epoch = {0};
+    // Local variables
+    size_t i = 0;                  //     Iterator
+    size_t n_epochs = 0;           //     Number of epochs in the interval
+    double span_days = 0.0;        //     Total span of the interval, in days
+    double stepsize_days = 0.0;    //     Stepsize of the interval, in days
+    epoch_t previous_epoch = {0};  //     Last epoch pushed to the interval
 
     if (epoch_iszerod(start)) return ERR("Start time is zerod");
     if (epoch_iszerod(end)) return ERR("End time is zerod");

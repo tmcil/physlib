@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
 #include "core/error_handling.h"
@@ -14,7 +15,6 @@
 #include "environment/block_graph.h"
 #include "environment/environment.h"
 
-// Module data structures -----------------------------------------------------
 
 typedef struct {
     char* port_id;
@@ -28,13 +28,35 @@ typedef struct {
     size_t n_ports;
 } output_block_t;
 
-// ----------------------------------------------------------------------------
+
+/* ------------------------------------------------------------------------- */
 
 err_t output_block_read_json(output_block_t *item, const cJSON *json);
+
+/* ------------------------------------------------------------------------- */
+
 err_t output_block_create_json(cJSON **json, const output_block_t *item);
+
+/* ------------------------------------------------------------------------- */
+
 err_t output_block_push(output_block_t *item, const char* port, const char* path);
+
+/* ------------------------------------------------------------------------- */
+
 err_t output_block_init(output_block_t *item);
+
+/* ------------------------------------------------------------------------- */
+
+err_t output_block_copy(output_block_t *dst, const output_block_t src);
+
+/* ------------------------------------------------------------------------- */
+
 void output_block_reset(output_block_t *item);
+
+/* ------------------------------------------------------------------------- */
+
 void output_port_reset(output_port_t *item);
+
+/* ------------------------------------------------------------------------- */
 
 #endif // BLOCK_OUTPUT_H

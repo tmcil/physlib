@@ -5,9 +5,9 @@
 // ----------------------------------------------------------------------------
 err_t environment_init(int argc, char *argv[]){
     // Local variables
-    err_t err = NO_ERROR;
-    char log_path[512];
-    cJSON *j_block_graph = NULL;
+    err_t err = NO_ERROR;        //     Error code
+    char log_path[512];          //     Path to log file
+    cJSON *j_block_graph = NULL; // MEM Block graph JSON tree
 
     // Read the cmdline arguements and set g_cmdline_args
     err = cmdline_args_read(argc, argv);
@@ -22,7 +22,6 @@ err_t environment_init(int argc, char *argv[]){
     if (err) return ERR("Failed to read block graph JSON");
     err = graph_read_json(&g_block_graph, j_block_graph);
     if (err) return ERR("Malformed block graph JSON");
-    cJSON_Delete(j_block_graph);
 
     // Open the stdout file
     err = working_dir_file(log_path, 512, LOGS, true, false);
@@ -35,6 +34,8 @@ err_t environment_init(int argc, char *argv[]){
     open_stderr_file(log_path);
 
     MSG("Block started: %s", g_cmdline_args.block_name);
+
+    cJSON_Delete(j_block_graph);
 
     return NO_ERROR;
 }

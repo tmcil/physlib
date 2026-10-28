@@ -10,19 +10,19 @@
 #include "external/cJSON.h"
 #include "core/error_handling.h"
 
+
+/* ------------------------------------------------------------------------- */
+
 int main(int argc, char *argv[]) {
-    // Block inputs -----------------------------------------------------------
-    input_epo_config_t block_config = {0};
-    // Block outputs ----------------------------------------------------------
-    output_block_t outputs          = {0};
-    interval_t timespan             = {0};
-    // Block variables --------------------------------------------------------
-    err_t err                       = NO_ERROR;
-    epoch_t start                   = {0};
-    epoch_t end                     = {0};
-    double aux_stepsize             = 0.0;
-    char *file_written_buf          = NULL;
-    cJSON *j_block_config = NULL, *j_outputs = NULL, *j_epo = NULL;
+    err_t err                       = NO_ERROR;       //     Error code
+    input_epo_config_t block_config = {0};            // MEM Block input config
+    output_block_t outputs          = {0};            // MEM Block output data
+    interval_t timespan             = {0};            // MEM Block output interval
+    epoch_t start                   = {0};            //     Start epoch
+    epoch_t end                     = {0};            //     End epoch
+    char *file_written_buf          = NULL;           // MEM Buffer which stores filenames written
+    cJSON *j_block_config = NULL, *j_outputs = NULL;  // MEM Block JSONs
+    cJSON *j_epo = NULL;                              // MEM Product JSONs
 
     err = environment_init(argc, argv);
     if (err) return ERR("Failed to initialise working environment");
@@ -32,7 +32,6 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to read input JSON file");
     err = input_epo_config_read_json(&block_config, j_block_config);
     if (err) return ERR("Input JSON file is malformed");
-    cJSON_Delete(j_block_config);
 
     // Load the start/end times into epochs
     err = epoch_from_iso8601(&start, block_config.start);
@@ -54,7 +53,6 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert product EPO to JSON");
     err = working_dir_write(&file_written_buf, FILES, j_epo);
     if (err) return ERR("Failed to write TIM JSON file");
-    cJSON_Delete(j_epo);
 
     // Initialise the output
     err = output_block_init(&outputs);
@@ -67,12 +65,17 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to convert outputs to JSON");
     err = working_dir_write(&file_written_buf, OUTPUTS, j_outputs);
     if (err) return ERR("Failed to write output file");
-    cJSON_Delete(j_outputs);
 
     // Free memory
     environment_done();
+    input_epo_config_free(&block_config);
+    output_block_reset(&outputs);
     interval_free(&timespan);
     if (file_written_buf != NULL) free(file_written_buf);
+    cJSON_Delete(j_block_config); cJSON_Delete(j_outputs);
+    cJSON_Delete(j_epo);
 
     return NO_ERROR;
 }
+
+/* ------------------------------------------------------------------------- */

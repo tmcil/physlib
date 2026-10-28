@@ -7,8 +7,6 @@
 #include "external/cJSON.h"
 #include "core/error_handling.h"
 
-// Module data structures -----------------------------------------------------
-
 typedef enum {
     WGS72_OLD = 1,
     WGS72 = 2,
@@ -19,8 +17,10 @@ typedef struct {
     wgs_model_t wgs_model;
 } sgp4_config_t;
 
-// ----------------------------------------------------------------------------
+/* ------------------------------------------------------------------------- */
 
 err_t block_sgp4_config_read(sgp4_config_t *item, const cJSON *json);
+
+/* ------------------------------------------------------------------------- */
 
 #endif // BLOCK_SGP4_CONFIG_H
