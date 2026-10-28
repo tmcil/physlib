@@ -6,7 +6,7 @@
 
 #include "block_sgp4_config.h"
 
-#include "external/cJSON.h"
+#include "external/cJSON/cJSON.h"
 #include "core/error_handling.h"
 #include "block_common/block_output.h"
 #include "product/eph.h"
@@ -15,8 +15,8 @@
 #include "environment/environment.h"
 #include "environment/block_graph.h"
 
-#include "external/SGP4.h"
-#include "external/TLE.h"
+#include "external/SGP4/SGP4.h"
+#include "external/SGP4/TLE.h"
 
 
 /* ------------------------------------------------------------------------- */

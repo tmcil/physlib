@@ -10,7 +10,7 @@
 #include <math.h>
 
 #include "core/error_handling.h"
-#include "external/cJSON.h"
+#include "external/cJSON/cJSON.h"
 #include "core/epoch.h"
 
 

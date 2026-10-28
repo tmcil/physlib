@@ -7,7 +7,7 @@
 #include "block_common/block_output.h"
 #include "product/tle.h"
 #include "environment/environment.h"
-#include "external/cJSON.h"
+#include "external/cJSON/cJSON.h"
 #include "core/error_handling.h"
 
 

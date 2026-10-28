@@ -11,7 +11,7 @@
 
 #include "core/error_handling.h"
 #include "utils/uuid.h"
-#include "external/cJSON.h"
+#include "external/cJSON/cJSON.h"
 #include "environment/block_graph.h"
 #include "environment/environment.h"
 

@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "external/cJSON.h"
+#include "external/cJSON/cJSON.h"
 #include "core/error_handling.h"
 
 

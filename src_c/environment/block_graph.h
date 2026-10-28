@@ -9,7 +9,7 @@
 
 #include "block_common/block_output.h"
 #include "working_dir.h"
-#include "external/cJSON.h"
+#include "external/cJSON/cJSON.h"
 #include "core/error_handling.h"
 #include "utils/uuid.h"
 
