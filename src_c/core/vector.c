@@ -4,7 +4,7 @@
 
 /* ------------------------------------------------------------------------- */
 
-err_t vector_init(vector_t *vec, const int dims) {
+err_t vector_allocate(vector_t *vec, const int dims) {
     // Local variables
     int i = 0;  //     Iterator
 
@@ -33,7 +33,7 @@ err_t vector_copy(vector_t *dst, const vector_t src) {
     if (vector_is_allocated(dst) && dst->values == src.values) return ERR("Source and destination vectors alias");
     if (vector_is_allocated(dst)) vector_free(dst);
 
-    if (vector_init(dst, src.dims)) return ERR("Failed to initialise destination vector");
+    if (vector_allocate(dst, src.dims)) return ERR("Failed to initialise destination vector");
     memcpy(dst->values, src.values, src.dims * sizeof(double));
     return NO_ERROR;
 }
@@ -143,7 +143,7 @@ err_t vector_add(vector_t *sum, const vector_t vec1, const vector_t vec2) {
     if (!vector_is_allocated(&vec2)) return ERR("Second vector is not allocated");
     if (vec1.dims != vec2.dims) return ERR("Vector dimensions do not match");
 
-    if (vector_init(sum, vec1.dims)) return ERR("Failed to initialize sum vector");
+    if (vector_allocate(sum, vec1.dims)) return ERR("Failed to initialize sum vector");
     for (i = 0; i < vec1.dims; i++) {
         sum->values[i] = vec1.values[i] + vec2.values[i];
     }
@@ -160,7 +160,7 @@ err_t vector_sub(vector_t *vec1_minus_vec2, const vector_t vec1, const vector_t 
     if (!vector_is_allocated(&vec2)) return ERR("Second vector is not allocated");
     if (vec1.dims != vec2.dims) return ERR("Vector dimensions do not match");
 
-    if (vector_init(vec1_minus_vec2, vec1.dims)) return ERR("Failed to initialize difference vector");
+    if (vector_allocate(vec1_minus_vec2, vec1.dims)) return ERR("Failed to initialize difference vector");
     for (i = 0; i < vec1.dims; i++) {
         vec1_minus_vec2->values[i] = vec1.values[i] - vec2.values[i];
     }
@@ -192,7 +192,7 @@ err_t vector_unit(vector_t *unit, const vector_t vec) {
     if (!vector_is_allocated(&vec)) return ERR("Vector is not allocated");
     if (unit == NULL) return ERR("Unit vector pointer is null");
 
-    if (vector_init(unit, vec.dims)) return ERR("Failed to initialize unit vector");
+    if (vector_allocate(unit, vec.dims)) return ERR("Failed to initialize unit vector");
     if (vector_norm(&norm, vec)) return ERR("Failed to calculate vector norm");
 
     for (i = 0; i < vec.dims; i++) {
@@ -228,7 +228,7 @@ err_t vector3_cross(vector_t *cross, const vector_t vec1, const vector_t vec2) {
     if (vec1.dims != vec2.dims) return ERR("Vector dimensions do not match");
     if (vec1.dims != 3) return ERR("Vectors must be 3D");
 
-    if (vector_init(cross, vec1.dims)) return ERR("Failed to initialize cross product");
+    if (vector_allocate(cross, vec1.dims)) return ERR("Failed to initialize cross product");
 
     if (vector_set(cross, 0, vec1.values[1] * vec2.values[2] - vec1.values[2]*vec2.values[1])) return ERR("Failed to set cross product value");
     if (vector_set(cross, 1, vec1.values[2] * vec2.values[0] - vec1.values[0]*vec2.values[2])) return ERR("Failed to set cross product value");

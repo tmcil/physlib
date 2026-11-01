@@ -4,12 +4,12 @@
 
 /* ------------------------------------------------------------------------- */
 
-err_t cartsv_init(cartsv_t *sv, const int dims, const orbit_frame_t frame) {
+err_t cartsv_allocate(cartsv_t *sv, const int dims, const orbit_frame_t frame) {
     if (sv == NULL) return ERR("State vector pointer is null");
     sv->frame = frame;
     epoch_zero(&sv->epoch);
-    if (vector_init(&sv->r, dims)) return ERR("Failed to initialize position vector");
-    if (vector_init(&sv->v, dims)) return ERR("Failed to initialize velocity vector");
+    if (vector_allocate(&sv->r, dims)) return ERR("Failed to initialize position vector");
+    if (vector_allocate(&sv->v, dims)) return ERR("Failed to initialize velocity vector");
     if (matrix_init_identity(&sv->cov, dims*2)) return ERR("Failed to initialize covariance matrix");
     return NO_ERROR;
 }
@@ -40,7 +40,7 @@ err_t cartsv_copy(cartsv_t *dst, const cartsv_t src) {
     if (cartsv_is_allocated(dst) && dst == &src) return ERR("Source and destiantion are aliased");
     if (cartsv_is_allocated(dst)) cartsv_free(dst);
 
-    if (cartsv_init(dst, src.r.dims, src.frame)) return ERR("Failed to initialise destination vector");
+    if (cartsv_allocate(dst, src.r.dims, src.frame)) return ERR("Failed to initialise destination vector");
     memcpy(dst->cov.values, src.cov.values, src.cov.cols * src.cov.rows * sizeof(double));
     memcpy(dst->r.values, src.r.values, src.r.dims * sizeof(double));
     memcpy(dst->v.values, src.v.values, src.v.dims * sizeof(double));
@@ -69,8 +69,8 @@ err_t cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity) {
     for (i = 0; i < capacity; i++) {
         trajectory->statevectors[i].frame = ORBIT_FRAME_GCRS;
         epoch_zero(&trajectory->statevectors[i].epoch);
-        vector_init(&trajectory->statevectors[i].r, 3);
-        vector_init(&trajectory->statevectors[i].v, 3);
+        vector_allocate(&trajectory->statevectors[i].r, 3);
+        vector_allocate(&trajectory->statevectors[i].v, 3);
         matrix_init_identity(&trajectory->statevectors[i].cov, 6);
     }
 

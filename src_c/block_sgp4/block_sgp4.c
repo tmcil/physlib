@@ -116,8 +116,8 @@ int main(int argc, char *argv[]) {
     statevector.frame = ORBIT_FRAME_GCRS;
     for (i = 0; i<timespan.n_epochs; i++) {
         epoch_copy(&statevector.epoch, timespan.epochs[i]);
-        vector_init(&statevector.r, 3);
-        vector_init(&statevector.v, 3);
+        vector_allocate(&statevector.r, 3);
+        vector_allocate(&statevector.v, 3);
         matrix_init_identity(&statevector.cov, 6);
 
         err = sgp4_eval(&statevector, timespan.epochs[i], tle, block_config.wgs_model);

@@ -19,7 +19,7 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
-err_t vector_init(vector_t *vec, const int dims);
+err_t vector_allocate(vector_t *vec, const int dims);
 
 /* ------------------------------------------------------------------------- */
 

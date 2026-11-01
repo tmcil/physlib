@@ -19,7 +19,7 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
-err_t matrix_init(matrix_t *mat, const int rows, const int cols);
+err_t matrix_allocate(matrix_t *mat, const int rows, const int cols);
 
 /* ------------------------------------------------------------------------- */
 

@@ -35,7 +35,7 @@ typedef struct {
 
 /* ------------------------------------------------------------------------- */
 
-err_t cartsv_init(cartsv_t *sv, const int dims, const orbit_frame_t frame);
+err_t cartsv_allocate(cartsv_t *sv, const int dims, const orbit_frame_t frame);
 
 /* ------------------------------------------------------------------------- */
 

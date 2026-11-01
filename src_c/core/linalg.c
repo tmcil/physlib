@@ -11,7 +11,7 @@ err_t matrix_rotmat3_x(matrix_t *rotmat, const double rad) {
     const double c = cos(rad);  //     Cosine of the rotation angle
     const double s = sin(rad);  //     Sine of the rotation angle
 
-    status = matrix_init(rotmat, 3, 3);
+    status = matrix_allocate(rotmat, 3, 3);
     if (status != NO_ERROR) return ERR("Failed to initialize rotation matrix");
 
     if (matrix_set(rotmat, 0, 0, 1.0)) failed = true;
@@ -41,7 +41,7 @@ err_t matrix_rotmat3_y(matrix_t *rotmat, const double rad) {
     const double c = cos(rad);  //     Cosine of the rotation angle
     const double s = sin(rad);  //     Sine of the rotation angle
 
-    status = matrix_init(rotmat, 3, 3);
+    status = matrix_allocate(rotmat, 3, 3);
     if (status != NO_ERROR) return ERR("Failed to initialize rotation matrix");
 
     if (matrix_set(rotmat, 0, 0, c)) failed = true;
@@ -71,7 +71,7 @@ err_t matrix_rotmat3_z(matrix_t *rotmat, const double rad) {
     const double c = cos(rad);  //     Cosine of the rotation angle
     const double s = sin(rad);  //     Sine of the rotation angle
 
-    status = matrix_init(rotmat, 3, 3);
+    status = matrix_allocate(rotmat, 3, 3);
     if (status != NO_ERROR) return ERR("Failed to initialize rotation matrix");
 
     if (matrix_set(rotmat, 0, 0, c)) failed = true;
