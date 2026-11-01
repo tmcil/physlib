@@ -35,6 +35,7 @@ add_library(internal_libs STATIC
     core/vector.c
     core/matrix.c
     core/cartsv.c
+    core/adjacency_matrix.c
 
 )
 target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
