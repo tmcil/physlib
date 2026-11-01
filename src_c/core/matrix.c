@@ -87,6 +87,58 @@ bool matrix_is_square(const matrix_t mat) {
 
 /* ------------------------------------------------------------------------- */
 
+bool matrix3_is_orthogonal(const matrix_t mat, const double tolerance) {
+    // Local variables
+    matrix_t mT = {0};          // MEM Transpose of input matrix
+    matrix_t mTm = {0};         // MEM Matrix multiplication of input and its transpose
+    bool is_orthogonal = false; //     True if mat is orthogonal
+
+    matrix_transpose(&mT, mat);
+    matrix3_mul(&mTm, mT, mat);
+
+    is_orthogonal = matrix_is_identity(mTm, tolerance);
+
+    matrix_free(&mT);
+    matrix_free(&mTm);
+
+    return is_orthogonal;
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool matrix_is_identity(const matrix_t mat, const double tolerance) {
+    // Local variables
+    size_t i = 0;  //     Iterator
+    size_t j = 0;  //     Iterator
+
+    if (!matrix_is_allocated(&mat)) return false;
+    for (i = 0; i < mat.rows; i++) {
+        for (j = 0; j < mat.cols; j++) {
+            if (i == j) {
+                // Check diagonal elements
+                if (matrix_get(mat, i, j) - 1.0 > tolerance) return false;
+            } else {
+                // Check non-diagonal elements
+                if (matrix_get(mat, i, j) > tolerance) return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+/* ------------------------------------------------------------------------- */
+
+bool matrix3_is_rotation(const matrix_t mat, const double tolerance) {
+    // Local variables
+    double det = 0.0;
+
+    matrix3_det(&det, mat);
+    return matrix3_is_orthogonal(mat, tolerance) && fabs(det - 1.0) < tolerance;
+}
+
+/* ------------------------------------------------------------------------- */
+
 err_t matrix_print(char *msg, const int msg_len, const matrix_t mat) {
     // Local variables
     int offset = 0;   //     Point in the msg buffer to write to

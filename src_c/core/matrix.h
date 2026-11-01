@@ -43,6 +43,18 @@ bool matrix_is_square(const matrix_t mat);
 
 /* ------------------------------------------------------------------------- */
 
+bool matrix3_is_orthogonal(const matrix_t mat, const double tolerance);
+
+/* ------------------------------------------------------------------------- */
+
+bool matrix_is_identity(const matrix_t mat, const double tolerance);
+
+/* ------------------------------------------------------------------------- */
+
+bool matrix3_is_rotation(const matrix_t mat, const double tolerance);
+
+/* ------------------------------------------------------------------------- */
+
 err_t matrix_print(char *msg, const int msg_len, const matrix_t mat);
 
 /* ------------------------------------------------------------------------- */
