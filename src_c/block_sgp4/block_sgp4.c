@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     if (err) return ERR("Failed to inialise EPH product");
 
     // TODO: Rotate this to actually be in J2000, currently in TEME
-    statevector.frame = ORBIT_FRAME_J2000;
+    statevector.frame = ORBIT_FRAME_GCRS;
     for (i = 0; i<timespan.n_epochs; i++) {
         epoch_copy(&statevector.epoch, timespan.epochs[i]);
         vector_init(&statevector.r, 3);

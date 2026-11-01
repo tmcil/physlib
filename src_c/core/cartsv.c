@@ -24,7 +24,7 @@ bool cartsv_is_allocated(const cartsv_t *sv) {
 /* ------------------------------------------------------------------------- */
 
 void cartsv_free(cartsv_t *sv) {
-    sv->frame = ORBIT_FRAME_J2000;
+    sv->frame = ORBIT_FRAME_GCRS;
     epoch_zero(&sv->epoch);
     vector_free(&sv->r);
     vector_free(&sv->v);
@@ -67,7 +67,7 @@ err_t cartsv_array_init(cartsv_array_t *trajectory, const size_t capacity) {
         return ERR("Failed to allocate array memory");
     }
     for (i = 0; i < capacity; i++) {
-        trajectory->statevectors[i].frame = ORBIT_FRAME_J2000;
+        trajectory->statevectors[i].frame = ORBIT_FRAME_GCRS;
         epoch_zero(&trajectory->statevectors[i].epoch);
         vector_init(&trajectory->statevectors[i].r, 3);
         vector_init(&trajectory->statevectors[i].v, 3);

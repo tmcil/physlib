@@ -78,7 +78,7 @@ err_t eph_read_json(cartsv_array_t *item, const cJSON *json) {
     err = cartsv_array_init(item, values_len);
     if (err) return ERR("Failed to initiliase trajectory from EPH");
 
-    statevector.frame = ORBIT_FRAME_J2000;
+    statevector.frame = ORBIT_FRAME_GCRS;
     vector_init(&statevector.r, 3);
     vector_init(&statevector.v, 3);
     matrix_init(&statevector.cov, 6, 6);

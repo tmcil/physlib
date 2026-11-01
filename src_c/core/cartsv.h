@@ -6,9 +6,17 @@
 #include "error_handling.h"
 #include "epoch.h"
 #include "matrix.h"
-#include "orbit_frame.h"
 #include "vector.h"
 
+
+typedef enum {
+    ORBIT_FRAME_GCRS,
+    ORBIT_FRAME_ITRS,
+    ORBIT_FRAME_TIRS,
+    ORBIT_FRAME_CIRS,
+
+    ORBIT_FRAME_TEME
+} orbit_frame_t;
 
 typedef struct cartsv {
     orbit_frame_t frame;
