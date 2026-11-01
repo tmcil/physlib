@@ -14,6 +14,7 @@ err_t planetary_constants(planetary_constants_t *constants, center_body_t body) 
         default:
             return ERR("Invalid center body :%d", (int)body);
     }
+    return NO_ERROR;
 }
 
 /* ------------------------------------------------------------------------- */

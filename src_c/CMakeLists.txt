@@ -34,8 +34,13 @@ add_library(internal_libs STATIC
     core/epoch.c
     core/vector.c
     core/matrix.c
+    core/linalg.c
     core/cartsv.c
+    core/constants.c
     core/adjacency_matrix.c
+
+    # Conversions
+    conversions/orbit_frame.c
 
 )
 target_include_directories(internal_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
