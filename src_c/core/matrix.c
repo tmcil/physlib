@@ -22,6 +22,42 @@ err_t matrix_allocate(matrix_t *mat, const int rows, const int cols) {
 
 /* ------------------------------------------------------------------------- */
 
+err_t matrix_init(matrix_t *mat, const double **values, const int rows, const int cols) {
+    // Local variables
+    int status = 0;  //     Status code
+    int i = 0;       //     Iterator
+    int j = 0;       //     Iterator
+
+    if (values == NULL) return ERR("NULL values argument");
+    if (rows <= 0 || cols <= 0) return ERR("Invalid dimensions");
+    if (!matrix_is_allocated(mat)) matrix_allocate(mat, rows, cols);
+
+    for (i = 0; i < rows; i++) {
+
+        if (values[i] == NULL) {
+            status = 1;
+            break;
+        }
+
+        for (j = 0; j < cols; j++) {
+            if (matrix_set(mat, i, j, values[i][j])) {
+                status = 1;
+                break;
+            }
+        }
+
+    }
+    if (status == 1) {
+        matrix_free(mat);
+        return ERR("Failed to set identity matrix element");
+    } else{
+        return NO_ERROR;
+    }
+    return NO_ERROR;
+}
+
+/* ------------------------------------------------------------------------- */
+
 err_t matrix_init_identity(matrix_t *mat, const int dims) {
     // Local variables
     int status = 0;  //     Status code
@@ -32,9 +68,16 @@ err_t matrix_init_identity(matrix_t *mat, const int dims) {
     for (i = 0; i < dims; i++) {
         for (j = 0; j < dims; j++) {
             if (i == j) {
-                if (matrix_set(mat, i, j, 1.0)) status = 1;
+                if (matrix_set(mat, i, j, 1.0)) {
+                    status = 1;
+                    break;
+                }
             } else {
-                if (matrix_set(mat, i, j, 0.0)) status = 1;
+                if (matrix_set(mat, i, j, 0.0)) {
+                    status = 1;
+                    break;
+                }
+
             }
         }
     }
@@ -375,11 +418,26 @@ err_t matrix3_mulmul(matrix_t *axbxc, const matrix_t a, const matrix_t b, const 
 
 /* ------------------------------------------------------------------------- */
 
-err_t matrix2_det(double *det, const matrix_t mat);
+err_t matrix2_det(double *det, const matrix_t mat) {
+    if (!matrix_is_allocated(&mat)) return ERR("Unallocated mat argument");
+    *det = (
+        matrix_get(mat, 0, 0) * matrix_get(mat, 1, 1) -
+        matrix_get(mat, 0, 1) * matrix_get(mat, 1, 0)
+    );
+    return NO_ERROR;
+}
 
 /* ------------------------------------------------------------------------- */
 
-err_t matrix3_det(double *det, const matrix_t mat);
+err_t matrix3_det(double *det, const matrix_t mat) {
+    if (!matrix_is_allocated(&mat)) return ERR("Unallocated mat argument");
+    *det = (
+        matrix_get(mat, 0, 0) * (matrix_get(mat, 1, 1)*matrix_get(mat, 2, 2) - matrix_get(mat, 1, 2)*matrix_get(mat, 2, 1)) -
+        matrix_get(mat, 0, 1) * (matrix_get(mat, 1, 0)*matrix_get(mat, 2, 2) - matrix_get(mat, 1, 2)*matrix_get(mat, 2, 0)) -
+        matrix_get(mat, 0, 2) * (matrix_get(mat, 1, 0)*matrix_get(mat, 2, 1) - matrix_get(mat, 1, 1)*matrix_get(mat, 2, 0))
+    );
+    return NO_ERROR;
+}
 
 /* ------------------------------------------------------------------------- */
 

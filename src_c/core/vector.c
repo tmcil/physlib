@@ -27,6 +27,24 @@ err_t vector_allocate(vector_t *vec, const int dims) {
 
 /* ------------------------------------------------------------------------- */
 
+err_t vector_init(vector_t *vec, const double *values, const int dims) {
+    // Local variables
+    int i = 0;  //     Iterator
+
+    if (values == NULL) return ERR("NULL values argument");
+    if (vec == NULL) return ERR("NULL vec argument");
+    if (dims <= 0) return ERR("Invalid dimensions");
+    if (!vector_is_allocated(vec)) vector_allocate(vec, dims);
+
+    for (i = 0; i < dims; i++) {
+        vec->values[i] = values[i];
+    }
+
+    return NO_ERROR;
+}
+
+/* ------------------------------------------------------------------------- */
+
 err_t vector_copy(vector_t *dst, const vector_t src) {
     if (dst == NULL) return ERR("Destination vector pointer is null");
     if (!vector_is_allocated(&src)) return ERR("Source vector is not allocated");

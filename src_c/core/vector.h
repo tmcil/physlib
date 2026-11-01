@@ -23,6 +23,10 @@ err_t vector_allocate(vector_t *vec, const int dims);
 
 /* ------------------------------------------------------------------------- */
 
+err_t vector_init(vector_t *vec, const double *values, const int dims);
+
+/* ------------------------------------------------------------------------- */
+
 err_t vector_copy(vector_t *dst, const vector_t src);
 
 /* ------------------------------------------------------------------------- */

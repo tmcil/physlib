@@ -2,6 +2,21 @@
 #define CONSTANTS_H
 
 
+#include "core/error_handling.h"
+
+typedef enum {
+    EARTH
+} center_body_t;
+
+typedef struct {
+    double radius;  // km
+    double rotation_rate;  // rads
+} planetary_constants_t;
+
+/* ------------------------------------------------------------------------- */
+
+err_t planetary_constants(planetary_constants_t *constants, center_body_t body);
+
 /* ------------------------------------------------------------------------- */
 
 #define PI      3.14159265358979323846
